@@ -57,7 +57,7 @@ public class TwitchClient {
             String line;
             while ((line = reader.readLine()) != null)
             {
-                if(line.toLowerCase().startsWith("PING "))
+                if(line.startsWith("PING"))
                 {
                     writer.write("PONG :tmi.twitch.tv" + "\r\n");
                     writer.flush();
@@ -68,12 +68,39 @@ public class TwitchClient {
                     if(line.contains("PRIVMSG"));
                     {
                         line = line.trim();
-                        String sentBy = line.substring(1, line.indexOf('!'));
-                        String inChannel = line.substring(line.indexOf('#') +1, line.indexOf(':',line.indexOf('#'))-1);
-                        String message = line.substring(line.indexOf(':', 1) + 1);
-                        System.out.println("# " + inChannel + " " + sentBy + ": " + message);
+                        String sentBy = null;
+                        try {
+                            sentBy = line.substring(1, line.indexOf('!'));
+                        }
+                        catch(StringIndexOutOfBoundsException e)
+                        {
+                            System.out.println("String index out of bounds on sentBy string" + line);
+                            e.printStackTrace();
+                        }
+                        String inChannel = null;
+                        try {
+                            inChannel = line.substring(line.indexOf('#') + 1, line.indexOf(':', line.indexOf('#')) - 1);
+                        }
+                        catch(StringIndexOutOfBoundsException e)
+                        {
+                            System.out.println("String index out of bounds on inChannel string" + line);
+                            e.printStackTrace();
+                        }
+
+                        String message = null;
+                        try {
+                            message = line.substring(line.indexOf(':', 1) + 1);
+                        }
+                        catch(StringIndexOutOfBoundsException e)
+                        {
+
+                            System.out.println("String index out of bounds on message string" + line);
+                            e.printStackTrace();
+                        }
+
+                        System.out.println("#" + inChannel + " " + sentBy + ": " + message);
                         if (message.charAt(0) == '!') {
-                            System.out.println("Command given");
+                            System.out.println("Command received");
                             String command = message.substring(1);
                             System.out.println("Command is " + command + " given by " + sentBy);
 
