@@ -10,6 +10,12 @@ public class Main {
         TwitchClient client;
 
         client = new TwitchClient(args[0], args[1]);
-        client.disconnect();
+
+        client.joinChannel("gjb93");
+
+        while(true)
+        {
+            client.listen();
+        }
     }
 }

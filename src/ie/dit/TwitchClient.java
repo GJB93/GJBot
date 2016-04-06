@@ -24,18 +24,20 @@ public class TwitchClient {
             writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             System.out.println("Creating reader...");
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
             System.out.println("Signing in...");
             writer.write("PASS " + token + "\r\n");
             writer.write("NICK " + username + "\r\n");
             writer.flush();
 
             String line = null;
-            System.out.println("Writing messages...");
             while((line = reader.readLine()) != null)
             {
-                System.out.println(line);
+                if(line.contains("376"))
+                {
+                    break;
+                }
             }
+            System.out.println("Connection created");
         }
         catch (IOException e)
         {
@@ -44,11 +46,60 @@ public class TwitchClient {
         }
     }
 
+    public void listen()
+    {
+        try
+        {
+            System.out.println("Listening...");
+            String line = null;
+            while ((line = reader.readLine()) != null)
+            {
+                if(line.toLowerCase().startsWith("PING "))
+                {
+                    writer.write("PONG :tmi.twitch.tv" + "\r\n");
+                    System.out.println("Replied to ping");
+                }
+                else
+                {
+                    line.trim();
+                    System.out.println(line);
+                }
+            }
+        }
+        catch(IOException e)
+        {
+            System.out.println("Error occurred while listening to chat");
+            e.printStackTrace();
+        }
+
+    }
+
+    public void joinChannel(String channel)
+    {
+        System.out.println("Joining channel " + channel + "...");
+        try {
+            writer.write("JOIN #" + channel + "\r\n");
+            writer.flush();
+            String line = null;
+
+            while((line = reader.readLine()) != null)
+            {
+                System.out.println(line);
+            }
+        }
+        catch(IOException e)
+        {
+            System.out.println("IO error occurred when joining channel" + channel);
+            e.printStackTrace();
+        }
+    }
+
     public void disconnect()
     {
         try
         {
-            writer.write("/quit");
+            System.out.println("Signing out...");
+            writer.write("/disconnect");
         }
         catch(IOException e)
         {
