@@ -13,11 +13,14 @@ public class TwitchClient {
     BufferedWriter writer;
     BufferedReader reader;
     Socket socket;
+    String username;
+    String channel;
 
     TwitchClient(String username, String token)
     {
         try
         {
+            this.username = username;
             System.out.println("Creating connection to Twitch server...");
             socket = new Socket(server, portNumber);
             System.out.println("Creating writer...");
@@ -57,12 +60,24 @@ public class TwitchClient {
                 if(line.toLowerCase().startsWith("PING "))
                 {
                     writer.write("PONG :tmi.twitch.tv" + "\r\n");
+                    writer.flush();
                     System.out.println("Replied to ping");
                 }
                 else
                 {
                     line.trim();
-                    System.out.println(line);
+                    String message = line.substring(line.indexOf(':', 1) + 1);
+                    if(message.charAt(0) == '!')
+                    {
+                        System.out.println("Command given");
+                        String command = message.substring(1);
+                        System.out.println("Command is " + command);
+                        if("leave".equals(command))
+                        {
+                            this.disconnect();
+                        }
+                    }
+                    System.out.println(message);
                 }
             }
         }
@@ -77,14 +92,19 @@ public class TwitchClient {
     public void joinChannel(String channel)
     {
         System.out.println("Joining channel " + channel + "...");
-        try {
+        try
+        {
+            this.channel = channel;
             writer.write("JOIN #" + channel + "\r\n");
             writer.flush();
             String line = null;
 
             while((line = reader.readLine()) != null)
             {
-                System.out.println(line);
+                if(line.contains("366"))
+                {
+                    break;
+                }
             }
         }
         catch(IOException e)
@@ -99,7 +119,9 @@ public class TwitchClient {
         try
         {
             System.out.println("Signing out...");
-            writer.write("/disconnect");
+            writer.write("PRIVMSG #" + channel + " : Leaving channel..." + "\r\n");
+            writer.write("PART #" + channel + "\r\n");
+            writer.flush();
         }
         catch(IOException e)
         {
