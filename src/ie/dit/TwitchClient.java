@@ -66,18 +66,20 @@ public class TwitchClient {
                 else
                 {
                     line.trim();
+                    System.out.println(line);
+                    String sentBy = line.substring(1, line.indexOf('!'));
                     String message = line.substring(line.indexOf(':', 1) + 1);
                     if(message.charAt(0) == '!')
                     {
                         System.out.println("Command given");
                         String command = message.substring(1);
-                        System.out.println("Command is " + command);
-                        if("leave".equals(command))
+                        System.out.println("Command is " + command + " given by " + sentBy);
+
+                        if ("leave".equals(command))
                         {
                             this.disconnect();
                         }
                     }
-                    System.out.println(message);
                 }
             }
         }
