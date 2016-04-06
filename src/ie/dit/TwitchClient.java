@@ -2,12 +2,14 @@ package ie.dit;
 
 import java.io.*;
 import java.net.Socket;
+import java.time.LocalTime;
 
 /**
  * Created by Graham on 06-Apr-16.
  */
 public class TwitchClient {
 
+    LocalTime time = LocalTime.now();
     String server = "irc.chat.twitch.tv";
     int portNumber = 6667;
     BufferedWriter writer;
@@ -19,6 +21,7 @@ public class TwitchClient {
     {
         try
         {
+            System.out.println("Bot Started at: " + time.toString());
             this.username = username;
             System.out.println("Creating connection to Twitch server...");
             socket = new Socket(server, portNumber);
