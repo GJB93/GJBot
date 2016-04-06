@@ -14,7 +14,6 @@ public class TwitchClient {
     BufferedReader reader;
     Socket socket;
     String username;
-    String channel;
 
     TwitchClient(String username, String token)
     {
@@ -32,7 +31,7 @@ public class TwitchClient {
             writer.write("NICK " + username + "\r\n");
             writer.flush();
 
-            String line = null;
+            String line;
             while((line = reader.readLine()) != null)
             {
                 if(line.contains("376"))
@@ -40,6 +39,7 @@ public class TwitchClient {
                     break;
                 }
             }
+
             System.out.println("Connection created");
         }
         catch (IOException e)
@@ -54,7 +54,7 @@ public class TwitchClient {
         try
         {
             System.out.println("Listening...");
-            String line = null;
+            String line;
             while ((line = reader.readLine()) != null)
             {
                 if(line.toLowerCase().startsWith("PING "))
@@ -65,19 +65,21 @@ public class TwitchClient {
                 }
                 else
                 {
-                    line.trim();
-                    System.out.println(line);
-                    String sentBy = line.substring(1, line.indexOf('!'));
-                    String message = line.substring(line.indexOf(':', 1) + 1);
-                    if(message.charAt(0) == '!')
+                    if(line.contains("PRIVMSG"));
                     {
-                        System.out.println("Command given");
-                        String command = message.substring(1);
-                        System.out.println("Command is " + command + " given by " + sentBy);
+                        line = line.trim();
+                        String sentBy = line.substring(1, line.indexOf('!'));
+                        String inChannel = line.substring(line.indexOf('#') +1, line.indexOf(':',line.indexOf('#'))-1);
+                        String message = line.substring(line.indexOf(':', 1) + 1);
+                        System.out.println("# " + inChannel + " " + sentBy + ": " + message);
+                        if (message.charAt(0) == '!') {
+                            System.out.println("Command given");
+                            String command = message.substring(1);
+                            System.out.println("Command is " + command + " given by " + sentBy);
 
-                        if ("leave".equals(command))
-                        {
-                            this.disconnect();
+                            if ("leave".equals(command)) {
+                                this.disconnect(inChannel);
+                            }
                         }
                     }
                 }
@@ -96,10 +98,9 @@ public class TwitchClient {
         System.out.println("Joining channel " + channel + "...");
         try
         {
-            this.channel = channel;
             writer.write("JOIN #" + channel + "\r\n");
             writer.flush();
-            String line = null;
+            String line;
 
             while((line = reader.readLine()) != null)
             {
@@ -116,14 +117,24 @@ public class TwitchClient {
         }
     }
 
-    public void disconnect()
+    public void disconnect(String channel)
     {
         try
         {
-            System.out.println("Signing out...");
-            writer.write("PRIVMSG #" + channel + " : Leaving channel..." + "\r\n");
+            writer.write("PRIVMSG #" + channel + " :Leaving channel..." + "\r\n");
             writer.write("PART #" + channel + "\r\n");
             writer.flush();
+
+            String line;
+
+            while((line = reader.readLine()) != null)
+            {
+                if(line.contains("PART"))
+                {
+                    break;
+                }
+            }
+            System.out.println("Left #" + channel);
         }
         catch(IOException e)
         {
