@@ -11,6 +11,7 @@ public class Main {
 
         client = new TwitchClient(args[0], args[1]);
 
+        client.joinChannel("gjb93");
         client.joinChannel("lirik");
 
         while(true)
