@@ -102,6 +102,19 @@ public class TwitchClient {
                         }
 
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
+
+                        if("test".equals(message))
+                        {
+                            writer.write("PRIVMSG #" + inChannel + " :test" + "\r\n");
+                            writer.flush();
+                        }
+
+                        if(message.contains("Kappa"))
+                        {
+                            writer.write("PRIVMSG #" + inChannel + " :Kappa" + "\r\n");
+                            writer.flush();
+                        }
+
                         if (message.charAt(0) == '!') {
                             System.out.println("Command received");
                             String command = message.substring(1);
