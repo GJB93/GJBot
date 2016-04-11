@@ -35,7 +35,7 @@ public class TwitchAPI {
 
     public String getStreamTitle(String channel)
     {
-        String title = "";
+        String key = "";
         targetUrl += baseUrl + "channels/" + channel + "?client_id=" + clientID;
 
         try {
@@ -72,8 +72,52 @@ public class TwitchAPI {
         }
 
         JSONObject obj = new JSONObject(str);
-        title = obj.getString("status");
+        key = obj.getString("status");
 
-        return title;
+        return key;
+    }
+
+    public String getCurrentGame(String channel)
+    {
+        String key = "";
+        targetUrl += baseUrl + "channels/" + channel + "?client_id=" + clientID;
+
+        try {
+            url = new URL(targetUrl);
+        }
+        catch(MalformedURLException e)
+        {
+            url = null;
+            System.out.println("Malformed URL exception found in StreamTitle method: " + targetUrl);
+            e.printStackTrace();
+        }
+
+        try {
+            reader = new BufferedReader(new InputStreamReader(url.openStream()));
+        }
+        catch(IOException e)
+        {
+            System.out.println("IO exception occurred when creating the URL reader");
+            e.printStackTrace();
+        }
+
+        String line;
+        String str = "";
+        try {
+            while ((line = reader.readLine()) != null)
+            {
+                str += line;
+            }
+        }
+        catch(IOException e)
+        {
+            System.out.println("IO exception occurred when reading the URL");
+            e.printStackTrace();
+        }
+
+        JSONObject obj = new JSONObject(str);
+        key = obj.getString("game");
+
+        return key;
     }
 }
