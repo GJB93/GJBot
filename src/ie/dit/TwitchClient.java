@@ -16,7 +16,7 @@ public class TwitchClient {
     BufferedReader reader;
     Socket socket;
     String username;
-    TwitchAPI api;
+    APILibrary api;
 
     TwitchClient(String username, String token, String clientID)
     {
@@ -51,7 +51,7 @@ public class TwitchClient {
             System.out.println("IO error occurred when creating socket");
             e.printStackTrace();
         }
-        api = new TwitchAPI(clientID);
+        api = new APILibrary(clientID);
     }
 
     public void listen()
@@ -111,13 +111,17 @@ public class TwitchClient {
                             writer.flush();
                         }
 
-                        /*
                         if(message.contains("Kappa"))
                         {
                             writer.write("PRIVMSG #" + inChannel + " :Kappa" + "\r\n");
                             writer.flush();
                         }
-                        */
+
+                        if(message.contains("SourPls"))
+                        {
+                            writer.write("PRIVMSG #" + inChannel + " :SourPls" + "\r\n");
+                            writer.flush();
+                        }
 
                         if (message.charAt(0) == '!') {
                             System.out.println("Command received");
@@ -146,7 +150,7 @@ public class TwitchClient {
                                 successiveCaps = 0;
                             }
 
-                            if(successiveCaps >= 10)
+                            if(successiveCaps >= 20)
                             {
                                 writer.write("PRIVMSG #" + inChannel + " :Stop shouting BibleThump" + "\r\n");
                                 writer.flush();
@@ -232,6 +236,18 @@ public class TwitchClient {
             if ("game".equals(command)) {
                 String game = api.getCurrentGame(channel);
                 writer.write("PRIVMSG #" + channel + " :" + game + "\r\n");
+                writer.flush();
+            }
+
+            if ("rave".equals(command)) {
+                String game = api.getCurrentGame(channel);
+                writer.write("PRIVMSG #" + channel + " :SourPls" + "\r\n");
+                writer.flush();
+            }
+
+            if ("created".equals(command)) {
+                String created = api.getChannelCreated(channel);
+                writer.write("PRIVMSG #" + channel + " : This channel was created on " + created + "\r\n");
                 writer.flush();
             }
         }

@@ -13,12 +13,13 @@ public class Main {
     public static void main(String[] args)
     {
         TwitchClient client;
+        APILibrary api = new APILibrary(args[2]);
         Scanner inputReader = new Scanner(System.in);
 
         client = new TwitchClient(args[0], args[1], args[2]);
 
         client.joinChannel("gjb93");
-        client.joinChannel("lirik");
+        api.getChannelAge("gjb93");
 
         while(true)
         {
