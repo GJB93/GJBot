@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.temporal.Temporal;
 
 /**
  * Created by Graham on 07-Apr-16.
@@ -34,14 +35,10 @@ public class APILibrary {
         this.clientID = clientID;
     }
 
-    public String getStreamTitle(String channel)
+    public void setUrl(String urlPassed)
     {
-        baseTwitchUrl = "https://api.twitch.tv/kraken/";
-        String key = "";
-        targetUrl += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
-
         try {
-            url = new URL(targetUrl);
+            url = new URL(urlPassed);
         }
         catch(MalformedURLException e)
         {
@@ -49,6 +46,15 @@ public class APILibrary {
             System.out.println("Malformed URL exception found in StreamTitle method: " + targetUrl);
             e.printStackTrace();
         }
+    }
+
+    public String getStreamTitle(String channel)
+    {
+        baseTwitchUrl = "https://api.twitch.tv/kraken/";
+        String key = "";
+        targetUrl += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
+
+        setUrl(targetUrl);
 
         try {
             reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -84,15 +90,7 @@ public class APILibrary {
         String key = "";
         targetUrl += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
 
-        try {
-            url = new URL(targetUrl);
-        }
-        catch(MalformedURLException e)
-        {
-            url = null;
-            System.out.println("Malformed URL exception found in StreamTitle method: " + targetUrl);
-            e.printStackTrace();
-        }
+        setUrl(targetUrl);
 
         try {
             reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -128,15 +126,7 @@ public class APILibrary {
         String key = "";
         targetUrl += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
 
-        try {
-            url = new URL(targetUrl);
-        }
-        catch(MalformedURLException e)
-        {
-            url = null;
-            System.out.println("Malformed URL exception found in StreamTitle method: " + targetUrl);
-            e.printStackTrace();
-        }
+        setUrl(targetUrl);
 
         try {
             reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -168,20 +158,12 @@ public class APILibrary {
         return key;
     }
 
-    public void getChannelAge(String channel)
+    public Period getChannelAge(String channel)
     {
         String key = "";
         targetUrl += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
 
-        try {
-            url = new URL(targetUrl);
-        }
-        catch(MalformedURLException e)
-        {
-            url = null;
-            System.out.println("Malformed URL exception found in StreamTitle method: " + targetUrl);
-            e.printStackTrace();
-        }
+        setUrl(targetUrl);
 
         try {
             reader = new BufferedReader(new InputStreamReader(url.openStream()));
@@ -211,6 +193,8 @@ public class APILibrary {
         key = key.substring(0, key.indexOf('T'));
         String[] split = key.split("-");
         LocalDate created = LocalDate.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
-        LocalDate now = 
+        Period age = Period.between(created, LocalDate.now());
+
+        return age;
     }
 }
