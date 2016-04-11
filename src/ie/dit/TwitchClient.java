@@ -2,6 +2,7 @@ package ie.dit;
 
 import java.io.*;
 import java.net.Socket;
+import java.time.Duration;
 import java.time.LocalTime;
 import java.time.Period;
 
@@ -10,6 +11,9 @@ import java.time.Period;
  */
 public class TwitchClient {
 
+    LocalTime lastSentBrainPower;
+    LocalTime lastReceivedBrainPower;
+    String lastSentBy;
     LocalTime time = LocalTime.now();
     String server = "irc.chat.twitch.tv";
     int portNumber = 6667;
@@ -18,9 +22,13 @@ public class TwitchClient {
     Socket socket;
     String username;
     private APILibrary api;
+    int brainPowerCounter;
 
     TwitchClient(String username, String token, String clientID)
     {
+        brainPowerCounter = 0;
+        lastSentBrainPower = LocalTime.now();
+        lastReceivedBrainPower = LocalTime.now();
         try
         {
             System.out.println("Bot Started at: " + time.toString());
@@ -73,6 +81,7 @@ public class TwitchClient {
                 {
                     if(line.contains("PRIVMSG"));
                     {
+                        String brainPower = "AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A- JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA";
                         line = line.trim();
                         String sentBy = null;
                         try {
@@ -112,16 +121,26 @@ public class TwitchClient {
                             writer.flush();
                         }
 
-                        if(message.contains("Kappa"))
+                        if(message.contains(brainPower))
                         {
-                            writer.write("PRIVMSG #" + inChannel + " :Kappa" + "\r\n");
-                            writer.flush();
-                        }
-
-                        if(message.contains("SourPls"))
-                        {
-                            writer.write("PRIVMSG #" + inChannel + " :SourPls" + "\r\n");
-                            writer.flush();
+                            if(Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 10) {
+                                if(Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 2 && !lastSentBy.equals(sentBy))
+                                {
+                                    lastSentBrainPower = LocalTime.now();
+                                    writer.write("PRIVMSG #" + inChannel + " :" + brainPower + "\r\n");
+                                    writer.flush();
+                                }
+                                else if((Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() >= 5 && Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 10)
+                                        || (lastSentBy.equals(sentBy) && Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 60))
+                                {
+                                    lastSentBrainPower = LocalTime.now();
+                                    writer.write("PRIVMSG #" + inChannel + " :SHIREE Don't Brain Power irresponsibly SHIREE" + "\r\n");
+                                    writer.flush();
+                                }
+                            }
+                            lastSentBy = sentBy;
+                            lastReceivedBrainPower = LocalTime.now();
+                            brainPowerCounter++;
                         }
 
                         if (message.charAt(0) == '!') {
@@ -132,33 +151,7 @@ public class TwitchClient {
                             answerCommand(command, inChannel);
                         }
 
-
-                        int successiveCaps = 0;
-                        boolean charBefore = false;
-                        String check = message.replace(" ", "");
-                        for(int i=0; i<check.length()-1; i++)
-                        {
-                            if(Character.isUpperCase(check.charAt(i)))
-                            {
-                                if(charBefore) {
-                                    successiveCaps++;
-                                }
-                                charBefore = true;
-                            }
-                            else
-                            {
-                                charBefore = false;
-                                successiveCaps = 0;
-                            }
-
-                            if(successiveCaps >= 20)
-                            {
-                                writer.write("PRIVMSG #" + inChannel + " :Stop shouting BibleThump" + "\r\n");
-                                writer.flush();
-                                break;
-                            }
-                        }
-
+                        checkCaps(message, inChannel, sentBy);
                     }
                 }
             }
@@ -240,18 +233,6 @@ public class TwitchClient {
                 writer.flush();
             }
 
-            if ("rave".equals(command)) {
-                String game = api.getCurrentGame(channel);
-                writer.write("PRIVMSG #" + channel + " :SourPls" + "\r\n");
-                writer.flush();
-            }
-
-            if ("created".equals(command)) {
-                String created = api.getChannelCreated(channel);
-                writer.write("PRIVMSG #" + channel + " : This channel was created on " + created + "\r\n");
-                writer.flush();
-            }
-
             if("age".equals(command))
             {
                 Period age = api.getChannelAge(channel);
@@ -273,11 +254,53 @@ public class TwitchClient {
                 writer.write(response + "\r\n");
                 writer.flush();
             }
+
+            if("brainpower".equals(command))
+            {
+                writer.write("PRIVMSG #" + channel + " :Brain Power Counter: " + brainPowerCounter + "\r\n");
+                writer.flush();
+            }
         }
         catch (IOException e)
         {
             System.out.println("IO exception occurred while attempting to answer a command");
             e.printStackTrace();
+        }
+    }
+
+    private void checkCaps(String message, String channel, String user)
+    {
+        int successiveCaps = 0;
+        boolean charBefore = false;
+        String check = message.replace(" ", "");
+        for(int i=0; i<check.length(); i++)
+        {
+            if(Character.isUpperCase(check.charAt(i)))
+            {
+                if(charBefore) {
+                    successiveCaps++;
+                }
+                charBefore = true;
+            }
+            else
+            {
+                charBefore = false;
+                successiveCaps = 0;
+            }
+
+            if(successiveCaps >= check.length()*0.5f )
+            {
+                try {
+                    writer.write("PRIVMSG #" + channel + " :" + user + " went over excessive cap limit" + "\r\n");
+                    writer.flush();
+                    break;
+                }
+                catch(IOException e)
+                {
+                    System.out.println("IO exception occurred when writing cap limit message");
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

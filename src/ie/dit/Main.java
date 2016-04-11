@@ -1,10 +1,5 @@
 package ie.dit;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Scanner;
-
 /**
  * Created by Graham on 06-Apr-16.
  */
@@ -14,7 +9,6 @@ public class Main {
     {
         TwitchClient client;
         APILibrary api = new APILibrary(args[2]);
-        Scanner inputReader = new Scanner(System.in);
 
         client = new TwitchClient(args[0], args[1], args[2]);
 
