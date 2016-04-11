@@ -124,16 +124,36 @@ public class TwitchClient {
                             String command = message.substring(1);
                             System.out.println("Command is " + command + " given by " + sentBy);
 
-                            if ("leave".equals(command)) {
-                                this.disconnect(inChannel);
+                            answerCommand(command, inChannel);
+                        }
+
+
+                        int successiveCaps = 0;
+                        boolean charBefore = false;
+                        String check = message.replace(" ", "");
+                        for(int i=0; i<check.length()-1; i++)
+                        {
+                            if(Character.isUpperCase(check.charAt(i)))
+                            {
+                                if(charBefore) {
+                                    successiveCaps++;
+                                }
+                                charBefore = true;
+                            }
+                            else
+                            {
+                                charBefore = false;
+                                successiveCaps = 0;
                             }
 
-                            if("title".equals(command)) {
-                                String title = api.getStreamTitle(inChannel);
-                                writer.write("PRIVMSG #" + inChannel + " :" + title + "\r\n");
+                            if(successiveCaps >= 10)
+                            {
+                                writer.write("PRIVMSG #" + inChannel + " :Stop shouting BibleThump" + "\r\n");
                                 writer.flush();
+                                break;
                             }
                         }
+
                     }
                 }
             }
@@ -170,7 +190,7 @@ public class TwitchClient {
         }
     }
 
-    public void disconnect(String channel)
+    private void disconnect(String channel)
     {
         try
         {
@@ -192,6 +212,32 @@ public class TwitchClient {
         catch(IOException e)
         {
             System.out.println("IO error occurred when disconnecting");
+            e.printStackTrace();
+        }
+    }
+
+    private void answerCommand(String command, String channel)
+    {
+        try {
+            if ("leave".equals(command)) {
+                this.disconnect(channel);
+            }
+
+            if ("title".equals(command)) {
+                String title = api.getStreamTitle(channel);
+                writer.write("PRIVMSG #" + channel + " :" + title + "\r\n");
+                writer.flush();
+            }
+
+            if ("game".equals(command)) {
+                String game = api.getCurrentGame(channel);
+                writer.write("PRIVMSG #" + channel + " :" + game + "\r\n");
+                writer.flush();
+            }
+        }
+        catch (IOException e)
+        {
+            System.out.println("IO exception occurred while attempting to answer a command");
             e.printStackTrace();
         }
     }
