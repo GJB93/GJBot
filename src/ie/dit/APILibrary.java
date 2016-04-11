@@ -15,7 +15,6 @@ import java.time.Period;
 public class APILibrary {
 
     String baseTwitchUrl;
-    String baseEmotesUrl;
     String target;
     private String clientID;
     private BufferedReader reader;
@@ -23,7 +22,6 @@ public class APILibrary {
     APILibrary()
     {
         baseTwitchUrl = "https://api.twitch.tv/kraken/";
-        baseEmotesUrl = "https://twitchemotes.com/api_cache/v2/global.json";
         target = "";
     }
 
@@ -96,17 +94,6 @@ public class APILibrary {
 
         JSONObject obj = getJSON(targetUrl);
         return obj.getString("game");
-    }
-
-    public String getChannelCreated(String channel)
-    {
-        target += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
-
-        URL targetUrl = setUrl(target);
-
-        JSONObject obj = getJSON(targetUrl);
-        String value = obj.getString("created_at");
-        return value.substring(0, value.indexOf('T'));
     }
 
     public Period getChannelAge(String channel)
