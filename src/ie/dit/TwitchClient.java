@@ -13,11 +13,11 @@ public class TwitchClient {
     LocalTime time = LocalTime.now();
     String server = "irc.chat.twitch.tv";
     int portNumber = 6667;
-    BufferedWriter writer;
-    BufferedReader reader;
+    private BufferedWriter writer;
+    private BufferedReader reader;
     Socket socket;
     String username;
-    APILibrary api;
+    private APILibrary api;
 
     TwitchClient(String username, String token, String clientID)
     {
