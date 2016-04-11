@@ -15,7 +15,7 @@ public class Main {
         TwitchClient client;
         Scanner inputReader = new Scanner(System.in);
 
-        client = new TwitchClient(args[0], args[1]);
+        client = new TwitchClient(args[0], args[1], args[2]);
 
         client.joinChannel("gjb93");
         client.joinChannel("lirik");

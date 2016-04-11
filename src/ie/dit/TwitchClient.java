@@ -16,8 +16,9 @@ public class TwitchClient {
     BufferedReader reader;
     Socket socket;
     String username;
+    TwitchAPI api;
 
-    TwitchClient(String username, String token)
+    TwitchClient(String username, String token, String clientID)
     {
         try
         {
@@ -50,6 +51,7 @@ public class TwitchClient {
             System.out.println("IO error occurred when creating socket");
             e.printStackTrace();
         }
+        api = new TwitchAPI(clientID);
     }
 
     public void listen()
@@ -109,11 +111,13 @@ public class TwitchClient {
                             writer.flush();
                         }
 
+                        /*
                         if(message.contains("Kappa"))
                         {
                             writer.write("PRIVMSG #" + inChannel + " :Kappa" + "\r\n");
                             writer.flush();
                         }
+                        */
 
                         if (message.charAt(0) == '!') {
                             System.out.println("Command received");
@@ -122,6 +126,12 @@ public class TwitchClient {
 
                             if ("leave".equals(command)) {
                                 this.disconnect(inChannel);
+                            }
+
+                            if("title".equals(command)) {
+                                String title = api.getStreamTitle(inChannel);
+                                writer.write("PRIVMSG #" + inChannel + " :" + title + "\r\n");
+                                writer.flush();
                             }
                         }
                     }
