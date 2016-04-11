@@ -3,6 +3,7 @@ package ie.dit;
 import java.io.*;
 import java.net.Socket;
 import java.time.LocalTime;
+import java.time.Period;
 
 /**
  * Created by Graham on 06-Apr-16.
@@ -248,6 +249,28 @@ public class TwitchClient {
             if ("created".equals(command)) {
                 String created = api.getChannelCreated(channel);
                 writer.write("PRIVMSG #" + channel + " : This channel was created on " + created + "\r\n");
+                writer.flush();
+            }
+
+            if("age".equals(command))
+            {
+                Period age = api.getChannelAge(channel);
+                String response = "PRIVMSG #" + channel + " : This channel is ";
+                if(age.getYears() > 0)
+                {
+                    response += age.getYears() + " years, ";
+                }
+
+                if(age.getMonths() > 0)
+                {
+                    response += age.getMonths() + " months, and ";
+                }
+
+                if(age.getDays() > 0)
+                {
+                    response += age.getDays() + " days old";
+                }
+                writer.write(response + "\r\n");
                 writer.flush();
             }
         }
