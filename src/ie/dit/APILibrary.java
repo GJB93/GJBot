@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
+import java.util.Hashtable;
 
 /**
  * Created by Graham on 07-Apr-16.
@@ -20,11 +21,13 @@ public class APILibrary {
     private String target;
     private String clientID;
     private BufferedReader reader;
-    private String currentGame;
-    private LocalTime currentGameStart;
+    private Hashtable<String, String> currentGame;
+    private Hashtable<String, LocalTime> currentGameStart;
 
     private APILibrary()
     {
+        currentGame = new Hashtable<>();
+        currentGameStart = new Hashtable<>();
         baseTwitchUrl = "https://api.twitch.tv/kraken/";
         target = "";
     }
@@ -154,7 +157,7 @@ public class APILibrary {
 
     public long getGameUptime(String channel)
     {
-        return Duration.between(currentGameStart, LocalTime.now()).getSeconds();
+        return Duration.between(currentGameStart.get(channel), LocalTime.now()).getSeconds();
     }
 
     public void checkGame(String channel)
@@ -169,8 +172,8 @@ public class APILibrary {
             String value = obj.getJSONObject("stream").getString("game");
             if(!value.equals(currentGame))
             {
-                currentGame = value;
-                currentGameStart = LocalTime.now();
+                currentGame.put(channel, value);
+                currentGameStart.put(channel, LocalTime.now());
             }
         }
     }
@@ -184,10 +187,10 @@ public class APILibrary {
         JSONObject obj = getJSON(targetUrl);
 
         if(!obj.isNull("stream")) {
-            currentGame = obj.getJSONObject("stream").getString("game");
+            currentGame.put(channel, obj.getJSONObject("stream").getString("game"));
             String value = obj.getJSONObject("stream").getString("created_at");
             value = value.substring(value.indexOf('T')+1, value.indexOf('Z'));
-            currentGameStart = LocalTime.parse(value);
+            currentGameStart.put(channel, LocalTime.parse(value));
             return true;
         }
         else

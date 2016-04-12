@@ -5,6 +5,10 @@ import java.net.Socket;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.Period;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Graham on 06-Apr-16.
@@ -25,9 +29,11 @@ public class TwitchClient {
     private int brainPowerCounter;
     boolean allowCommands;
     private String sendString = "\r\n";
+    private Hashtable<String, Boolean> streamOnline;
 
     TwitchClient(String username, String token, String clientID)
     {
+        streamOnline = new Hashtable<>();
         allowCommands = false;
         brainPowerCounter = 0;
         lastSentBrainPower = LocalTime.now();
@@ -73,6 +79,10 @@ public class TwitchClient {
         try
         {
             System.out.println("Listening...");
+            if(Duration.between(lastCheck, LocalTime.now()).getSeconds() > 59)
+            {
+                this.checkStatus();
+            }
             String line;
             while ((line = reader.readLine()) != null)
             {
@@ -169,7 +179,6 @@ public class TwitchClient {
             System.out.println("Error occurred while listening to chat");
             e.printStackTrace();
         }
-
     }
 
     public void joinChannel(String channel)
@@ -192,6 +201,14 @@ public class TwitchClient {
             writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + ", type !leave to disconnect this bot" + sendString);
             writer.flush();
 
+            if(api.isOnline(channel))
+            {
+                streamOnline.put(channel, true);
+            }
+            else
+            {
+                streamOnline.put(channel, false);
+            }
         }
         catch(IOException e)
         {
@@ -386,6 +403,22 @@ public class TwitchClient {
             reply += uptime + " second";
 
         return reply;
+    }
+
+    public void checkStatus()
+    {
+        Set<String> keys = streamOnline.keySet();
+        for(String key: keys)
+        {
+            if(streamOnline.get(key))
+            {
+                api.checkGame(key);
+            }
+            else
+            {
+                api.isOnline(key);
+            }
+        }
     }
 
     private void checkCaps(String message, String channel, String user)
