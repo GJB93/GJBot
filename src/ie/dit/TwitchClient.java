@@ -23,6 +23,7 @@ public class TwitchClient {
     private final APILibrary api;
     private int brainPowerCounter;
     boolean allowCommands;
+    private String sendString = "\r\n";
 
     TwitchClient(String username, String token, String clientID)
     {
@@ -42,8 +43,8 @@ public class TwitchClient {
             System.out.println("Creating reader...");
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             System.out.println("Signing in...");
-            writer.write("PASS " + token + "\r\n");
-            writer.write("NICK " + username + "\r\n");
+            writer.write("PASS " + token + sendString);
+            writer.write("NICK " + username + sendString);
             writer.flush();
 
             String line;
@@ -75,7 +76,7 @@ public class TwitchClient {
             {
                 if(line.startsWith("PING"))
                 {
-                    writer.write("PONG :tmi.twitch.tv" + "\r\n");
+                    writer.write("PONG :tmi.twitch.tv" + sendString);
                     writer.flush();
                     System.out.println("Replied to ping");
                 }
@@ -121,57 +122,9 @@ public class TwitchClient {
 
                         if("test".equals(message))
                         {
-                            writer.write("PRIVMSG #" + inChannel + " :test" + "\r\n");
+                            writer.write("PRIVMSG #" + inChannel + " :test" + sendString);
                             writer.flush();
                         }
-
-
-                        if(message != null && message.toLowerCase().contains("best boat"))
-                        {
-                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
-                                writer.write("PRIVMSG #" + inChannel + " :cirBestBoat Amatsukaze Best Boat OhISee" + "\r\n");
-                                writer.flush();
-                                lastMessageSent = LocalTime.now();
-                            }
-                        }
-
-                        if(message != null && message.toLowerCase().contains("riot") && message.toLowerCase().contains("shiree"))
-                        {
-                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
-                                writer.write("PRIVMSG #" + inChannel + " :Don't riot SHIREE" + "\r\n");
-                                writer.flush();
-                                lastMessageSent = LocalTime.now();
-                            }
-                        }
-
-
-                        if(message != null && message.toLowerCase().contains("best nep"))
-                        {
-                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
-                                writer.write("PRIVMSG #" + inChannel + " :NoireBest Noire Best Nep NoireBest" + "\r\n");
-                                writer.flush();
-                                lastMessageSent = LocalTime.now();
-                            }
-                        }
-
-                        if(message != null && message.toLowerCase().contains("ohisee"))
-                        {
-                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
-                                writer.write("PRIVMSG #" + inChannel + " :OhISee" + "\r\n");
-                                writer.flush();
-                                lastMessageSent = LocalTime.now();
-                            }
-                        }
-
-                        if(message != null && message.toLowerCase().contains("daijoubu"))
-                        {
-                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
-                                writer.write("PRIVMSG #" + inChannel + " :Daijoubu" + "\r\n");
-                                writer.flush();
-                                lastMessageSent = LocalTime.now();
-                            }
-                        }
-
 
                         if(message != null && message.contains(part))
                         {
@@ -179,14 +132,14 @@ public class TwitchClient {
                                 if(Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 2 && !lastSentBy.equals(sentBy))
                                 {
                                     lastSentBrainPower = LocalTime.now();
-                                    writer.write("PRIVMSG #" + inChannel + " :" + brainPower + "\r\n");
+                                    writer.write("PRIVMSG #" + inChannel + " :" + brainPower + sendString);
                                     writer.flush();
                                 }
                                 else if((Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() >= 5 && Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 10)
                                         || ((lastSentBy.equals(sentBy) && Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 30)))
                                 {
                                     lastSentBrainPower = LocalTime.now();
-                                    writer.write("PRIVMSG #" + inChannel + " :SHIREE Don't Brain Power irresponsibly SHIREE" + "\r\n");
+                                    writer.write("PRIVMSG #" + inChannel + " :SHIREE Don't Brain Power irresponsibly SHIREE" + sendString);
                                     writer.flush();
                                 }
                             }
@@ -223,7 +176,7 @@ public class TwitchClient {
         System.out.println("Joining channel " + channel + "...");
         try
         {
-            writer.write("JOIN #" + channel + "\r\n");
+            writer.write("JOIN #" + channel + sendString);
             writer.flush();
             String line;
 
@@ -250,8 +203,8 @@ public class TwitchClient {
     {
         try
         {
-            writer.write("PRIVMSG #" + channel + " :Leaving channel..." + "\r\n");
-            writer.write("PART #" + channel + "\r\n");
+            writer.write("PRIVMSG #" + channel + " :Leaving channel..." + sendString);
+            writer.write("PART #" + channel + sendString);
             writer.flush();
 
             String line;
@@ -282,20 +235,20 @@ public class TwitchClient {
 
             if ("title".equals(command)) {
                 String title = api.getStreamTitle(channel);
-                writer.write("PRIVMSG #" + channel + " :" + title + "\r\n");
+                writer.write("PRIVMSG #" + channel + " :" + title + sendString);
                 writer.flush();
             }
 
             if ("game".equals(command)) {
                 String game = api.getCurrentGame(channel);
-                writer.write("PRIVMSG #" + channel + " :" + game + "\r\n");
+                writer.write("PRIVMSG #" + channel + " :" + game + sendString);
                 writer.flush();
             }
 
             if("age".equals(command))
             {
                 Period age = api.getChannelAge(channel);
-                String response = "PRIVMSG #" + channel + " :/w gjb93 This channel is ";
+                String response = "PRIVMSG #" + channel + " :This channel is ";
                 if(age.getYears() > 0)
                 {
                     response += age.getYears() + " years, ";
@@ -310,7 +263,7 @@ public class TwitchClient {
                 {
                     response += age.getDays() + " days old";
                 }
-                writer.write(response + "\r\n");
+                writer.write(response + sendString);
                 writer.flush();
             }
 
@@ -332,20 +285,38 @@ public class TwitchClient {
                 {
                     response += age.getDays() + " days old";
                 }
-                writer.write(response + "\r\n");
+                writer.write(response + sendString);
                 writer.flush();
             }
 
             if("sub".equals(command) || "subscribe".equals(command))
             {
-                writer.write("PRIVMSG #" + channel + " :https://www.twitch.tv/" + channel + "/subscribe" + "\r\n");
+                writer.write("PRIVMSG #" + channel + " :https://www.twitch.tv/" + channel + "/subscribe" + sendString);
                 writer.flush();
             }
 
             if("brainpower".equals(command))
             {
-                writer.write("PRIVMSG #" + channel + " :Brain Power Counter: " + brainPowerCounter + "\r\n");
+                writer.write("PRIVMSG #" + channel + " :Brain Power Counter: " + brainPowerCounter + sendString);
                 writer.flush();
+            }
+
+            if("uptime".equals(command))
+            {
+                long uptime = api.getUptime(channel).getSeconds();
+                String response = "PRIVMSG #" + channel + " :Stream has been online for ";
+                uptime = uptime - 3600;
+                if(uptime > 0)
+                {
+                    response = getTime(uptime, response);
+                    writer.write(response + sendString);
+                    writer.flush();
+                }
+                else
+                {
+                    writer.write("PRIVMSG #" + channel + " :Stream is currently offline" + sendString);
+                    writer.flush();
+                }
             }
         }
         catch (IOException e)
@@ -353,6 +324,33 @@ public class TwitchClient {
             System.out.println("IO exception occurred while attempting to answer a command");
             e.printStackTrace();
         }
+    }
+
+    private String getTime(long uptime, String response)
+    {
+        String reply = response;
+        if(uptime >= 3600) {
+            if(uptime/60 > 1)
+                reply += uptime / 3600 + " hours, ";
+            else
+                reply += uptime / 3600 + " hour, ";
+            uptime = uptime % 3600;
+        }
+
+        if(uptime >= 60) {
+            if(uptime/60 > 1)
+                reply += uptime / 60 + " minutes and ";
+            else
+                reply += uptime / 60 + " minute and ";
+            uptime = uptime % 60;
+        }
+
+        if(uptime > 1)
+            reply += uptime + " seconds";
+        else
+            reply += uptime + " second";
+
+        return reply;
     }
 
     private void checkCaps(String message, String channel, String user)
@@ -378,7 +376,7 @@ public class TwitchClient {
             if(successiveCaps >= check.length()*0.5f )
             {
                 try {
-                    writer.write("PRIVMSG #" + channel + " :" + user + " went over excessive cap limit" + "\r\n");
+                    writer.write("PRIVMSG #" + channel + " :" + user + " went over excessive cap limit" + sendString);
                     writer.flush();
                     break;
                 }

@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Period;
 
 /**
@@ -77,6 +79,7 @@ public class APILibrary {
 
     public String getStreamTitle(String channel)
     {
+        target = "";
         baseTwitchUrl = "https://api.twitch.tv/kraken/";
         target += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
 
@@ -88,6 +91,7 @@ public class APILibrary {
 
     public String getCurrentGame(String channel)
     {
+        target = "";
         target += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
 
         URL targetUrl = setUrl(target);
@@ -98,6 +102,7 @@ public class APILibrary {
 
     public Period getChannelAge(String channel)
     {
+        target = "";
         target += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
 
         URL targetUrl = setUrl(target);
@@ -109,5 +114,25 @@ public class APILibrary {
         String[] split = value.split("-");
         LocalDate created = LocalDate.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
         return Period.between(created, LocalDate.now());
+    }
+
+    public Duration getUptime(String channel)
+    {
+        target = "";
+        target += baseTwitchUrl + "streams/" + channel + "?client_id=" + clientID;
+        URL targetUrl = setUrl(target);
+
+        JSONObject obj = getJSON(targetUrl);
+
+        if(!obj.isNull("stream")) {
+            String value = obj.getJSONObject("stream").getString("created_at");
+            value = value.substring(value.indexOf('T')+1, value.indexOf('Z'));
+            LocalTime timeStarted = LocalTime.parse(value);
+            return Duration.between(timeStarted, LocalTime.now());
+        }
+        else
+        {
+            return null;
+        }
     }
 }
