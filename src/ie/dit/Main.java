@@ -13,7 +13,7 @@ public class Main {
         client = new TwitchClient(args[0], args[1], args[2]);
 
         client.joinChannel("gjb93");
-        api.getChannelAge("gjb93");
+        //client.joinChannel("cirno_tv");
 
         while(true)
         {

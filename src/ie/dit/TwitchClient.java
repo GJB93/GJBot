@@ -11,28 +11,30 @@ import java.time.Period;
  */
 public class TwitchClient {
 
-    LocalTime lastSentBrainPower;
-    LocalTime lastReceivedBrainPower;
-    String lastSentBy;
-    LocalTime time = LocalTime.now();
-    String server = "irc.chat.twitch.tv";
-    int portNumber = 6667;
+    private LocalTime lastSentBrainPower;
+    private LocalTime lastReceivedBrainPower;
+    private LocalTime lastMessageSent;
+    private String lastSentBy;
+    private final String server = "irc.chat.twitch.tv";
+    private final int portNumber = 6667;
     private BufferedWriter writer;
     private BufferedReader reader;
-    Socket socket;
-    String username;
-    private APILibrary api;
-    int brainPowerCounter;
+    private Socket socket;
+    private final APILibrary api;
+    private int brainPowerCounter;
+    boolean allowCommands;
 
     TwitchClient(String username, String token, String clientID)
     {
+        allowCommands = false;
         brainPowerCounter = 0;
         lastSentBrainPower = LocalTime.now();
         lastReceivedBrainPower = LocalTime.now();
+        lastMessageSent = LocalTime.now();
+        lastSentBy = "";
         try
         {
-            System.out.println("Bot Started at: " + time.toString());
-            this.username = username;
+            System.out.println("Bot Started at: " + LocalTime.now().toString());
             System.out.println("Creating connection to Twitch server...");
             socket = new Socket(server, portNumber);
             System.out.println("Creating writer...");
@@ -79,9 +81,10 @@ public class TwitchClient {
                 }
                 else
                 {
-                    if(line.contains("PRIVMSG"));
+                    if(line.contains("PRIVMSG"))
                     {
-                        String brainPower = "AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A- JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA";
+                        String brainPower = "O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A-JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA";
+                        String part = "O-oooooooooo AAAAE-A-A-I-A-U-";
                         line = line.trim();
                         String sentBy = null;
                         try {
@@ -115,15 +118,64 @@ public class TwitchClient {
 
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
 
+
                         if("test".equals(message))
                         {
                             writer.write("PRIVMSG #" + inChannel + " :test" + "\r\n");
                             writer.flush();
                         }
 
-                        if(message.contains(brainPower))
+
+                        if(message != null && message.toLowerCase().contains("best boat"))
                         {
-                            if(Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 10) {
+                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
+                                writer.write("PRIVMSG #" + inChannel + " :cirBestBoat Amatsukaze Best Boat OhISee" + "\r\n");
+                                writer.flush();
+                                lastMessageSent = LocalTime.now();
+                            }
+                        }
+
+                        if(message != null && message.toLowerCase().contains("riot") && message.toLowerCase().contains("shiree"))
+                        {
+                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
+                                writer.write("PRIVMSG #" + inChannel + " :Don't riot SHIREE" + "\r\n");
+                                writer.flush();
+                                lastMessageSent = LocalTime.now();
+                            }
+                        }
+
+
+                        if(message != null && message.toLowerCase().contains("best nep"))
+                        {
+                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
+                                writer.write("PRIVMSG #" + inChannel + " :NoireBest Noire Best Nep NoireBest" + "\r\n");
+                                writer.flush();
+                                lastMessageSent = LocalTime.now();
+                            }
+                        }
+
+                        if(message != null && message.toLowerCase().contains("ohisee"))
+                        {
+                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
+                                writer.write("PRIVMSG #" + inChannel + " :OhISee" + "\r\n");
+                                writer.flush();
+                                lastMessageSent = LocalTime.now();
+                            }
+                        }
+
+                        if(message != null && message.toLowerCase().contains("daijoubu"))
+                        {
+                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 45) {
+                                writer.write("PRIVMSG #" + inChannel + " :Daijoubu" + "\r\n");
+                                writer.flush();
+                                lastMessageSent = LocalTime.now();
+                            }
+                        }
+
+
+                        if(message != null && message.contains(part))
+                        {
+                            if(Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 30) {
                                 if(Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 2 && !lastSentBy.equals(sentBy))
                                 {
                                     lastSentBrainPower = LocalTime.now();
@@ -131,7 +183,7 @@ public class TwitchClient {
                                     writer.flush();
                                 }
                                 else if((Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() >= 5 && Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 10)
-                                        || (lastSentBy.equals(sentBy) && Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 60))
+                                        || ((lastSentBy.equals(sentBy) && Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 30)))
                                 {
                                     lastSentBrainPower = LocalTime.now();
                                     writer.write("PRIVMSG #" + inChannel + " :SHIREE Don't Brain Power irresponsibly SHIREE" + "\r\n");
@@ -147,11 +199,13 @@ public class TwitchClient {
                             System.out.println("Command received");
                             String command = message.substring(1);
                             System.out.println("Command is " + command + " given by " + sentBy);
-
-                            answerCommand(command, inChannel);
+                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 10) {
+                                answerCommand(command, inChannel, sentBy);
+                                lastMessageSent = LocalTime.now();
+                            }
                         }
 
-                        checkCaps(message, inChannel, sentBy);
+                        //checkCaps(message, inChannel, sentBy);
                     }
                 }
             }
@@ -180,6 +234,10 @@ public class TwitchClient {
                     break;
                 }
             }
+            /*
+            writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + "\r\n");
+            writer.flush();
+            */
         }
         catch(IOException e)
         {
@@ -214,9 +272,10 @@ public class TwitchClient {
         }
     }
 
-    private void answerCommand(String command, String channel)
+    private void answerCommand(String command, String channel, String sentBy)
     {
         try {
+
             if ("leave".equals(command)) {
                 this.disconnect(channel);
             }
@@ -236,7 +295,7 @@ public class TwitchClient {
             if("age".equals(command))
             {
                 Period age = api.getChannelAge(channel);
-                String response = "PRIVMSG #" + channel + " : This channel is ";
+                String response = "PRIVMSG #" + channel + " :/w gjb93 This channel is ";
                 if(age.getYears() > 0)
                 {
                     response += age.getYears() + " years, ";
@@ -252,6 +311,34 @@ public class TwitchClient {
                     response += age.getDays() + " days old";
                 }
                 writer.write(response + "\r\n");
+                writer.flush();
+            }
+
+            if("myage".equals(command))
+            {
+                Period age = api.getChannelAge(sentBy);
+                String response = "PRIVMSG #" + channel + " :Your account is ";
+                if(age.getYears() > 0)
+                {
+                    response += age.getYears() + " years, ";
+                }
+
+                if(age.getMonths() > 0)
+                {
+                    response += age.getMonths() + " months, and ";
+                }
+
+                if(age.getDays() > 0)
+                {
+                    response += age.getDays() + " days old";
+                }
+                writer.write(response + "\r\n");
+                writer.flush();
+            }
+
+            if("sub".equals(command) || "subscribe".equals(command))
+            {
+                writer.write("PRIVMSG #" + channel + " :https://www.twitch.tv/" + channel + "/subscribe" + "\r\n");
                 writer.flush();
             }
 

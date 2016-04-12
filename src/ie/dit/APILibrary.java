@@ -14,12 +14,12 @@ import java.time.Period;
  */
 public class APILibrary {
 
-    String baseTwitchUrl;
-    String target;
+    private String baseTwitchUrl;
+    private String target;
     private String clientID;
     private BufferedReader reader;
 
-    APILibrary()
+    private APILibrary()
     {
         baseTwitchUrl = "https://api.twitch.tv/kraken/";
         target = "";
