@@ -14,6 +14,7 @@ public class TwitchClient {
     private LocalTime lastSentBrainPower;
     private LocalTime lastReceivedBrainPower;
     private LocalTime lastMessageSent;
+    private LocalTime lastCheck;
     private String lastSentBy;
     private final String server = "irc.chat.twitch.tv";
     private final int portNumber = 6667;
@@ -32,6 +33,7 @@ public class TwitchClient {
         lastSentBrainPower = LocalTime.now();
         lastReceivedBrainPower = LocalTime.now();
         lastMessageSent = LocalTime.now();
+        lastCheck = LocalTime.now();
         lastSentBy = "";
         try
         {
@@ -119,7 +121,6 @@ public class TwitchClient {
 
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
 
-
                         if("test".equals(message))
                         {
                             writer.write("PRIVMSG #" + inChannel + " :test" + sendString);
@@ -152,7 +153,7 @@ public class TwitchClient {
                             System.out.println("Command received");
                             String command = message.substring(1);
                             System.out.println("Command is " + command + " given by " + sentBy);
-                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 10) {
+                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 2) {
                                 answerCommand(command, inChannel, sentBy);
                                 lastMessageSent = LocalTime.now();
                             }
@@ -188,7 +189,7 @@ public class TwitchClient {
                 }
             }
 
-            writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + ", type !leave to disconnect this bot" + "\r\n");
+            writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + ", type !leave to disconnect this bot" + sendString);
             writer.flush();
 
         }
@@ -303,7 +304,7 @@ public class TwitchClient {
 
             if("uptime".equals(command))
             {
-                long uptime = api.getUptime(channel).getSeconds();
+                long uptime = api.getChannelUptime(channel);
                 String response = "PRIVMSG #" + channel + " :Stream has been online for ";
                 uptime = uptime - 3600;
                 if(uptime > 0)
@@ -323,6 +324,34 @@ public class TwitchClient {
             {
                 writer.write("PRIVMSG #" + channel + " :Bot created by GJB93. Source code and information about this bot can be found at https://github.com/GJB93/GJBot" + sendString);
                 writer.flush();
+            }
+
+            if("gjb93".equals(sentBy)) {
+                if (command.contains("join") && "gjb93".equals(channel)) {
+                    try {
+                        String param = command.split(" ")[1];
+                        writer.write("PRIVMSG #" + channel + " :Joining channel " + param + sendString);
+                        writer.flush();
+                        this.joinChannel(param);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("Incorrect join parameter given");
+                        writer.write("PRIVMSG #" + channel + " :Invite command is missing channel parameter" + sendString);
+                        writer.flush();
+                    }
+                }
+
+                if (command.contains("leave") && "gjb93".equals(channel)) {
+                    try {
+                        String param = command.split(" ")[1];
+                        writer.write("PRIVMSG #" + channel + " :Leaving channel " + param + sendString);
+                        writer.flush();
+                        this.disconnect(param);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("Incorrect join parameter given");
+                        writer.write("PRIVMSG #" + channel + " :Invite command is missing channel parameter" + sendString);
+                        writer.flush();
+                    }
+                }
             }
         }
         catch (IOException e)

@@ -20,6 +20,8 @@ public class APILibrary {
     private String target;
     private String clientID;
     private BufferedReader reader;
+    private String currentGame;
+    private LocalTime currentGameStart;
 
     private APILibrary()
     {
@@ -86,7 +88,14 @@ public class APILibrary {
         URL targetUrl = setUrl(target);
 
         JSONObject obj = getJSON(targetUrl);
-        return obj.getString("status");
+
+        try {
+            return obj.getString("status");
+        }
+        catch (JSONException e)
+        {
+            return "This stream has a null title";
+        }
     }
 
     public String getCurrentGame(String channel)
@@ -97,7 +106,14 @@ public class APILibrary {
         URL targetUrl = setUrl(target);
 
         JSONObject obj = getJSON(targetUrl);
-        return obj.getString("game");
+
+        try {
+            return obj.getString("game");
+        }
+        catch(JSONException e)
+        {
+            return "This stream has a null game";
+        }
     }
 
     public Period getChannelAge(String channel)
@@ -116,7 +132,7 @@ public class APILibrary {
         return Period.between(created, LocalDate.now());
     }
 
-    public Duration getUptime(String channel)
+    public long getChannelUptime(String channel)
     {
         target = "";
         target += baseTwitchUrl + "streams/" + channel + "?client_id=" + clientID;
@@ -128,11 +144,55 @@ public class APILibrary {
             String value = obj.getJSONObject("stream").getString("created_at");
             value = value.substring(value.indexOf('T')+1, value.indexOf('Z'));
             LocalTime timeStarted = LocalTime.parse(value);
-            return Duration.between(timeStarted, LocalTime.now());
+            return Duration.between(timeStarted, LocalTime.now()).getSeconds();
         }
         else
         {
-            return null;
+            return 0;
+        }
+    }
+
+    public long getGameUptime(String channel)
+    {
+        return Duration.between(currentGameStart, LocalTime.now()).getSeconds();
+    }
+
+    public void checkGame(String channel)
+    {
+        target = "";
+        target += baseTwitchUrl + "streams/" + channel + "?client_id=" + clientID;
+        URL targetUrl = setUrl(target);
+
+        JSONObject obj = getJSON(targetUrl);
+
+        if(!obj.isNull("stream")) {
+            String value = obj.getJSONObject("stream").getString("game");
+            if(!value.equals(currentGame))
+            {
+                currentGame = value;
+                currentGameStart = LocalTime.now();
+            }
+        }
+    }
+
+    public boolean isOnline(String channel)
+    {
+        target = "";
+        target += baseTwitchUrl + "streams/" + channel + "?client_id=" + clientID;
+        URL targetUrl = setUrl(target);
+
+        JSONObject obj = getJSON(targetUrl);
+
+        if(!obj.isNull("stream")) {
+            currentGame = obj.getJSONObject("stream").getString("game");
+            String value = obj.getJSONObject("stream").getString("created_at");
+            value = value.substring(value.indexOf('T')+1, value.indexOf('Z'));
+            currentGameStart = LocalTime.parse(value);
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }
