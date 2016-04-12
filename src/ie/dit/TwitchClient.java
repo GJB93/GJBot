@@ -158,7 +158,7 @@ public class TwitchClient {
                             }
                         }
 
-                        //checkCaps(message, inChannel, sentBy);
+                        checkCaps(message, inChannel, sentBy);
                     }
                 }
             }
@@ -187,10 +187,10 @@ public class TwitchClient {
                     break;
                 }
             }
-            /*
-            writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + "\r\n");
+
+            writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + ", type !leave to disconnect this bot" + "\r\n");
             writer.flush();
-            */
+
         }
         catch(IOException e)
         {
@@ -317,6 +317,12 @@ public class TwitchClient {
                     writer.write("PRIVMSG #" + channel + " :Stream is currently offline" + sendString);
                     writer.flush();
                 }
+            }
+
+            if("botinfo".equals(command))
+            {
+                writer.write("PRIVMSG #" + channel + " :Bot created by GJB93. Source code and information about this bot can be found at https://github.com/GJB93/GJBot" + sendString);
+                writer.flush();
             }
         }
         catch (IOException e)
