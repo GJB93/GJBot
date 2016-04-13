@@ -16,32 +16,39 @@ import java.util.Set;
 public class TwitchClient {
 
     CommandDictionary cd;
-    //private LocalTime lastSentBrainPower;
-    //private LocalTime lastReceivedBrainPower;
-    //private String lastSentBy;
     private LocalTime lastMessageSent;
     private LocalTime lastCheck;
-    private final String server = "irc.chat.twitch.tv";
-    private final int portNumber = 6667;
     private BufferedWriter writer;
     private BufferedReader reader;
-    private Socket socket;
     private final APILibrary api;
-    private int brainPowerCounter;
     boolean allowCommands;
     private String sendString = "\r\n";
     private Hashtable<String, Boolean> streamOnline;
     private Hashtable<String, String> streamMessage;
 
+    public void setStreamMessage(String channel, String message)
+    {
+        streamMessage.put(channel, message);
+    }
+
+    public String getStreamMessage(String channel)
+    {
+        return streamMessage.get(channel);
+    }
+
+    public void removeStreamMessage(String channel)
+    {
+        streamMessage.remove(channel);
+    }
+
     TwitchClient(String username, String token, String clientID)
     {
+        String server = "irc.chat.twitch.tv";
+        int portNumber = 6667;
+        Socket socket;
         streamOnline = new Hashtable<>();
         streamMessage = new Hashtable<>();
         allowCommands = false;
-        brainPowerCounter = 0;
-        //lastSentBrainPower = LocalTime.now();
-        //lastReceivedBrainPower = LocalTime.now();
-        //lastSentBy = "";
         lastMessageSent = LocalTime.now();
         lastCheck = LocalTime.now();
 
@@ -135,50 +142,12 @@ public class TwitchClient {
                         }
 
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
-                        String response = cd.checkLine(inChannel, sentBy, message, streamMessage, this);
-                        writer.write("PRIVMSG #" + inChannel + " :" + response + sendString);
-                        writer.flush();
-                        /*
-                        if("test".equals(message))
-                        {
-                            writer.write("PRIVMSG #" + inChannel + " :test" + sendString);
+                        String response = cd.checkLine(inChannel, sentBy, message, this);
+
+                        if(response != null) {
+                            writer.write("PRIVMSG #" + inChannel + " :" + response + sendString);
                             writer.flush();
                         }
-
-
-                        if(message != null && message.contains(part))
-                        {
-                            if(Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 30) {
-                                if(Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 2 && !lastSentBy.equals(sentBy))
-                                {
-                                    lastSentBrainPower = LocalTime.now();
-                                    writer.write("PRIVMSG #" + inChannel + " :" + brainPower + sendString);
-                                    writer.flush();
-                                }
-                                else if((Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() >= 5 && Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 10)
-                                        || ((lastSentBy.equals(sentBy) && Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 30)))
-                                {
-                                    lastSentBrainPower = LocalTime.now();
-                                    writer.write("PRIVMSG #" + inChannel + " :SHIREE Don't Brain Power irresponsibly SHIREE" + sendString);
-                                    writer.flush();
-                                }
-                            }
-                            lastSentBy = sentBy;
-                            lastReceivedBrainPower = LocalTime.now();
-                            brainPowerCounter++;
-                        }
-
-
-                        if (message.charAt(0) == '!') {
-                            System.out.println("Command received");
-                            String command = message.substring(1);
-                            System.out.println("Command is " + command + " given by " + sentBy);
-                            if(Duration.between(lastMessageSent, LocalTime.now()).getSeconds() > 2) {
-                                answerCommand(command, inChannel, sentBy);
-                                lastMessageSent = LocalTime.now();
-                            }
-                        }
-                        */
                         checkCaps(message, inChannel, sentBy);
                     }
                 }
@@ -251,194 +220,6 @@ public class TwitchClient {
             System.out.println("IO error occurred when disconnecting");
             e.printStackTrace();
         }
-    }
-
-    private void answerCommand(String command, String channel, String sentBy)
-    {
-        try {
-
-            if ("leave".equals(command)) {
-                this.disconnect(channel);
-            }
-
-            if ("title".equals(command)) {
-                String title = api.getStreamTitle(channel);
-                writer.write("PRIVMSG #" + channel + " :" + title + sendString);
-                writer.flush();
-            }
-
-            if ("game".equals(command)) {
-                String game = api.getCurrentGame(channel);
-                writer.write("PRIVMSG #" + channel + " :" + game + sendString);
-                writer.flush();
-            }
-
-            if("age".equals(command))
-            {
-                Period age = api.getChannelAge(channel);
-                String response = "PRIVMSG #" + channel + " :This channel is ";
-                if(age.getYears() > 0)
-                {
-                    response += age.getYears() + " years, ";
-                }
-
-                if(age.getMonths() > 0)
-                {
-                    response += age.getMonths() + " months, and ";
-                }
-
-                if(age.getDays() > 0)
-                {
-                    response += age.getDays() + " days old";
-                }
-                writer.write(response + sendString);
-                writer.flush();
-            }
-
-            if("myage".equals(command))
-            {
-                Period age = api.getChannelAge(sentBy);
-                String response = "PRIVMSG #" + channel + " :Your account is ";
-                if(age.getYears() > 0)
-                {
-                    response += age.getYears() + " years, ";
-                }
-
-                if(age.getMonths() > 0)
-                {
-                    response += age.getMonths() + " months, and ";
-                }
-
-                if(age.getDays() > 0)
-                {
-                    response += age.getDays() + " days old";
-                }
-                writer.write(response + sendString);
-                writer.flush();
-            }
-
-            if("sub".equals(command) || "subscribe".equals(command))
-            {
-                writer.write("PRIVMSG #" + channel + " :https://www.twitch.tv/" + channel + "/subscribe" + sendString);
-                writer.flush();
-            }
-
-            if("brainpower".equals(command))
-            {
-                writer.write("PRIVMSG #" + channel + " :Brain Power Counter: " + brainPowerCounter + sendString);
-                writer.flush();
-            }
-
-            if("uptime".equals(command))
-            {
-                long uptime = api.getChannelUptime(channel);
-                String response = "PRIVMSG #" + channel + " :Stream has been online for ";
-                uptime = uptime - 3600;
-                if(uptime > 0)
-                {
-                    response = getTime(uptime, response);
-                    writer.write(response + sendString);
-                    writer.flush();
-                }
-                else
-                {
-                    writer.write("PRIVMSG #" + channel + " :Stream is currently offline" + sendString);
-                    writer.flush();
-                }
-            }
-
-            if("botinfo".equals(command))
-            {
-                writer.write("PRIVMSG #" + channel + " :Bot created by GJB93. Source code and information about this bot can be found at https://github.com/GJB93/GJBot" + sendString);
-                writer.flush();
-            }
-
-            if(command.contains("motd"))
-            {
-                try {
-                    String param = command.split(" ")[1];
-                    if("set".equals(param))
-                    {
-                        String motd = command.substring(command.indexOf("set")+3);
-                        streamMessage.put(channel, motd);
-                        writer.write("PRIVMSG #" + channel + " :New MOTD: " + streamMessage.get(channel) + sendString);
-                        writer.flush();
-                    }
-
-                    if("delete".equals(param))
-                    {
-                        streamMessage.remove(channel);
-                        writer.write("PRIVMSG #" + channel + " :Message of the day has been deleted" + sendString);
-                        writer.flush();
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    if(streamMessage.get(channel) != null) {
-                        writer.write("PRIVMSG #" + channel + " :MOTD: " + streamMessage.get(channel) + sendString);
-                        writer.flush();
-                    }
-                }
-            }
-
-            if("gjb93".equals(sentBy)) {
-                if (command.contains("join") && "gjb93".equals(channel)) {
-                    try {
-                        String param = command.split(" ")[1];
-                        writer.write("PRIVMSG #" + channel + " :Joining channel " + param + sendString);
-                        writer.flush();
-                        this.joinChannel(param);
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("Incorrect join parameter given");
-                        writer.write("PRIVMSG #" + channel + " :Invite command is missing channel parameter" + sendString);
-                        writer.flush();
-                    }
-                }
-
-                if (command.contains("leave") && "gjb93".equals(channel)) {
-                    try {
-                        String param = command.split(" ")[1];
-                        writer.write("PRIVMSG #" + channel + " :Leaving channel " + param + sendString);
-                        writer.flush();
-                        this.disconnect(param);
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("Incorrect join parameter given");
-                        writer.write("PRIVMSG #" + channel + " :Invite command is missing channel parameter" + sendString);
-                        writer.flush();
-                    }
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            System.out.println("IO exception occurred while attempting to answer a command");
-            e.printStackTrace();
-        }
-    }
-
-    private String getTime(long uptime, String response)
-    {
-        String reply = response;
-        if(uptime >= 3600) {
-            if(uptime/60 > 1)
-                reply += uptime / 3600 + " hours, ";
-            else
-                reply += uptime / 3600 + " hour, ";
-            uptime = uptime % 3600;
-        }
-
-        if(uptime >= 60) {
-            if(uptime/60 > 1)
-                reply += uptime / 60 + " minutes and ";
-            else
-                reply += uptime / 60 + " minute and ";
-            uptime = uptime % 60;
-        }
-
-        if(uptime > 1)
-            reply += uptime + " seconds";
-        else
-            reply += uptime + " second";
-
-        return reply;
     }
 
     public void checkStatus()

@@ -15,7 +15,7 @@ public class CommandDictionary {
         api = new APILibrary(clientID);
     }
 
-    public String checkLine(String inChannel, String sentBy, String message, Hashtable<String, String> streamMessage, TwitchClient client)
+    public String checkLine(String inChannel, String sentBy, String message, TwitchClient client)
     {
         if("test".equals(message))
         {
@@ -26,14 +26,19 @@ public class CommandDictionary {
             System.out.println("Command received");
             String command = message.substring(1);
             System.out.println("Command is " + command + " given by " + sentBy);
-            return answerCommand(command, inChannel, sentBy, streamMessage, client);
+            return answerCommand(command, inChannel, sentBy, client);
         }
 
         return null;
     }
 
-    private String answerCommand(String command, String channel, String sentBy, Hashtable<String, String> streamMessage, TwitchClient client)
+    private String answerCommand(String command, String channel, String sentBy, TwitchClient client)
     {
+        if("leave".equals(command))
+        {
+            client.disconnect(channel);
+        }
+
         if ("title".equals(command)) {
             return api.getStreamTitle(channel);
         }
@@ -111,21 +116,22 @@ public class CommandDictionary {
         }
 
         if(command.contains("motd")) {
+            System.out.println("Checking message of the day");
             try {
                 String param = command.split(" ")[1];
                 if ("set".equals(param)) {
                     String motd = command.substring(command.indexOf("set") + 3);
-                    streamMessage.put(channel, motd);
-                    return "New MOTD: " + streamMessage.get(channel);
+                    client.setStreamMessage(channel, motd);
+                    return "New MOTD: " + client.getStreamMessage(channel);
                 }
 
                 if ("delete".equals(param)) {
-                    streamMessage.remove(channel);
+                    client.removeStreamMessage(channel);
                     return "Message of the day has been deleted";
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-                if (streamMessage.get(channel) != null) {
-                    return "MOTD: " + streamMessage.get(channel);
+                if (client.getStreamMessage(channel) != null) {
+                    return "MOTD: " + client.getStreamMessage(channel);
                 }
             }
         }
@@ -148,8 +154,7 @@ public class CommandDictionary {
                     client.disconnect(param);
                     return "Leaving channel " + param;
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Incorrect join parameter given");
-                    return "Invite command is missing channel parameter";
+                    return null;
                 }
             }
         }
@@ -183,4 +188,40 @@ public class CommandDictionary {
 
         return reply;
     }
+
+    /*
+
+    //private LocalTime lastSentBrainPower;
+    //private LocalTime lastReceivedBrainPower;
+    //private String lastSentBy;
+    //private int brainPowerCounter;
+    //brainPowerCounter = 0;
+    //lastSentBrainPower = LocalTime.now();
+    //lastReceivedBrainPower = LocalTime.now();
+    //lastSentBy = "";
+    private void brainPower()
+    {
+        if(message != null && message.contains(part))
+        {
+            if(Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 30) {
+                if(Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 2 && !lastSentBy.equals(sentBy))
+                {
+                    lastSentBrainPower = LocalTime.now();
+                    writer.write("PRIVMSG #" + inChannel + " :" + brainPower + sendString);
+                    writer.flush();
+                }
+                else if((Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() >= 5 && Duration.between(lastReceivedBrainPower, LocalTime.now()).getSeconds() <= 10)
+                        || ((lastSentBy.equals(sentBy) && Duration.between(lastSentBrainPower, LocalTime.now()).getSeconds() > 30)))
+                {
+                    lastSentBrainPower = LocalTime.now();
+                    writer.write("PRIVMSG #" + inChannel + " :SHIREE Don't Brain Power irresponsibly SHIREE" + sendString);
+                    writer.flush();
+                }
+            }
+            lastSentBy = sentBy;
+            lastReceivedBrainPower = LocalTime.now();
+            brainPowerCounter++;
+        }
+    }
+    */
 }
