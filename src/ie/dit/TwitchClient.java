@@ -30,10 +30,12 @@ public class TwitchClient {
     boolean allowCommands;
     private String sendString = "\r\n";
     private Hashtable<String, Boolean> streamOnline;
+    private Hashtable<String, String> streamMessage;
 
     TwitchClient(String username, String token, String clientID)
     {
         streamOnline = new Hashtable<>();
+        streamMessage = new Hashtable<>();
         allowCommands = false;
         brainPowerCounter = 0;
         lastSentBrainPower = LocalTime.now();
@@ -341,6 +343,32 @@ public class TwitchClient {
             {
                 writer.write("PRIVMSG #" + channel + " :Bot created by GJB93. Source code and information about this bot can be found at https://github.com/GJB93/GJBot" + sendString);
                 writer.flush();
+            }
+
+            if(command.contains("motd"))
+            {
+                try {
+                    String param = command.split(" ")[1];
+                    if("set".equals(param))
+                    {
+                        String motd = command.substring(command.indexOf("set")+3);
+                        streamMessage.put(channel, motd);
+                        writer.write("PRIVMSG #" + channel + " :New MOTD: " + streamMessage.get(channel) + sendString);
+                        writer.flush();
+                    }
+
+                    if("delete".equals(param))
+                    {
+                        streamMessage.remove(channel);
+                        writer.write("PRIVMSG #" + channel + " :Message of the day has been deleted" + sendString);
+                        writer.flush();
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    if(streamMessage.get(channel) != null) {
+                        writer.write("PRIVMSG #" + channel + " :MOTD: " + streamMessage.get(channel) + sendString);
+                        writer.flush();
+                    }
+                }
             }
 
             if("gjb93".equals(sentBy)) {
