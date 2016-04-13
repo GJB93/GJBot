@@ -15,11 +15,12 @@ import java.util.Set;
  */
 public class TwitchClient {
 
-    private LocalTime lastSentBrainPower;
-    private LocalTime lastReceivedBrainPower;
+    CommandDictionary cd;
+    //private LocalTime lastSentBrainPower;
+    //private LocalTime lastReceivedBrainPower;
+    //private String lastSentBy;
     private LocalTime lastMessageSent;
     private LocalTime lastCheck;
-    private String lastSentBy;
     private final String server = "irc.chat.twitch.tv";
     private final int portNumber = 6667;
     private BufferedWriter writer;
@@ -38,11 +39,12 @@ public class TwitchClient {
         streamMessage = new Hashtable<>();
         allowCommands = false;
         brainPowerCounter = 0;
-        lastSentBrainPower = LocalTime.now();
-        lastReceivedBrainPower = LocalTime.now();
+        //lastSentBrainPower = LocalTime.now();
+        //lastReceivedBrainPower = LocalTime.now();
+        //lastSentBy = "";
         lastMessageSent = LocalTime.now();
         lastCheck = LocalTime.now();
-        lastSentBy = "";
+
         try
         {
             System.out.println("Bot Started at: " + LocalTime.now().toString());
@@ -73,6 +75,7 @@ public class TwitchClient {
             System.out.println("IO error occurred when creating socket");
             e.printStackTrace();
         }
+        cd = new CommandDictionary(clientID);
         api = new APILibrary(clientID);
     }
 
@@ -98,8 +101,8 @@ public class TwitchClient {
                 {
                     if(line.contains("PRIVMSG"))
                     {
-                        String brainPower = "O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A-JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA";
-                        String part = "O-oooooooooo AAAAE-A-A-I-A-U-";
+                        //String brainPower = "O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A-JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA";
+                        //String part = "O-oooooooooo AAAAE-A-A-I-A-U-";
                         line = line.trim();
                         String sentBy = null;
                         try {
@@ -132,12 +135,16 @@ public class TwitchClient {
                         }
 
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
-
+                        String response = cd.checkLine(inChannel, sentBy, message, streamMessage);
+                        writer.write("PRIVMSG #" + inChannel + " :" + response + sendString);
+                        writer.flush();
+                        /*
                         if("test".equals(message))
                         {
                             writer.write("PRIVMSG #" + inChannel + " :test" + sendString);
                             writer.flush();
                         }
+
 
                         if(message != null && message.contains(part))
                         {
@@ -161,6 +168,7 @@ public class TwitchClient {
                             brainPowerCounter++;
                         }
 
+
                         if (message.charAt(0) == '!') {
                             System.out.println("Command received");
                             String command = message.substring(1);
@@ -170,7 +178,7 @@ public class TwitchClient {
                                 lastMessageSent = LocalTime.now();
                             }
                         }
-
+                        */
                         checkCaps(message, inChannel, sentBy);
                     }
                 }
