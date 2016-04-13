@@ -135,7 +135,7 @@ public class TwitchClient {
                         }
 
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
-                        String response = cd.checkLine(inChannel, sentBy, message, streamMessage);
+                        String response = cd.checkLine(inChannel, sentBy, message, streamMessage, this);
                         writer.write("PRIVMSG #" + inChannel + " :" + response + sendString);
                         writer.flush();
                         /*
@@ -227,7 +227,7 @@ public class TwitchClient {
         }
     }
 
-    private void disconnect(String channel)
+    public void disconnect(String channel)
     {
         try
         {

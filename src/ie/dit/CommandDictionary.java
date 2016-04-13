@@ -15,7 +15,7 @@ public class CommandDictionary {
         api = new APILibrary(clientID);
     }
 
-    public String checkLine(String inChannel, String sentBy, String message, Hashtable<String, String> streamMessage)
+    public String checkLine(String inChannel, String sentBy, String message, Hashtable<String, String> streamMessage, TwitchClient client)
     {
         if("test".equals(message))
         {
@@ -26,13 +26,13 @@ public class CommandDictionary {
             System.out.println("Command received");
             String command = message.substring(1);
             System.out.println("Command is " + command + " given by " + sentBy);
-            return answerCommand(command, inChannel, sentBy, streamMessage);
+            return answerCommand(command, inChannel, sentBy, streamMessage, client);
         }
 
         return null;
     }
 
-    private String answerCommand(String command, String channel, String sentBy, Hashtable<String, String> streamMessage)
+    private String answerCommand(String command, String channel, String sentBy, Hashtable<String, String> streamMessage, TwitchClient client)
     {
         if ("title".equals(command)) {
             return api.getStreamTitle(channel);
@@ -126,6 +126,30 @@ public class CommandDictionary {
             } catch (ArrayIndexOutOfBoundsException e) {
                 if (streamMessage.get(channel) != null) {
                     return "MOTD: " + streamMessage.get(channel);
+                }
+            }
+        }
+
+        if("gjb93".equals(sentBy)) {
+            if (command.contains("join") && "gjb93".equals(channel)) {
+                try {
+                    String param = command.split(" ")[1];
+                    client.joinChannel(param);
+                    return "Joining channel " + param;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Incorrect join parameter given");
+                    return "Invite command is missing channel parameter";
+                }
+            }
+
+            if (command.contains("leave") && "gjb93".equals(channel)) {
+                try {
+                    String param = command.split(" ")[1];
+                    client.disconnect(param);
+                    return "Leaving channel " + param;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Incorrect join parameter given");
+                    return "Invite command is missing channel parameter";
                 }
             }
         }
