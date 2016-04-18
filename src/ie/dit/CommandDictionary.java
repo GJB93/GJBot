@@ -17,7 +17,7 @@ public class CommandDictionary {
 
     public String checkLine(String inChannel, String sentBy, String message, TwitchClient client)
     {
-        if("test".equals(message))
+        if("test".equals(message) && sentBy != "gjbot93")
         {
             return "test";
         }

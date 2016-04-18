@@ -9,10 +9,9 @@ import java.util.*;
 /**
  * Created by Graham on 06-Apr-16.
  */
-public class TwitchClient {
+public class TwitchClient implements Runnable{
 
     CommandDictionary cd;
-    private boolean motdSent;
     private LocalTime lastCheck;
     private BufferedWriter writer;
     private BufferedReader reader;
@@ -42,7 +41,6 @@ public class TwitchClient {
         String server = "irc.chat.twitch.tv";
         int portNumber = 6667;
         Socket socket;
-        motdSent = false;
         streamOnline = new Hashtable<>();
         streamMessage = new Hashtable<>();
         lastCheck = LocalTime.now();
@@ -81,44 +79,34 @@ public class TwitchClient {
         api = new APILibrary(clientID);
     }
 
-    public void listen()
+    public void run()
     {
         try
         {
             System.out.println("Listening...");
-            if(Duration.between(lastCheck, LocalTime.now()).getSeconds() > 59)
-            {
+            if (Duration.between(lastCheck, LocalTime.now()).getSeconds() > 59) {
                 this.checkStatus();
             }
             String line;
-            while ((line = reader.readLine()) != null)
-            {
-                if(line.startsWith("PING"))
-                {
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("PING")) {
                     writer.write(MessageBuilder.pingReply());
                     writer.flush();
                     System.out.println("Replied to ping");
-                }
-                else
-                {
-                    if(line.contains("PRIVMSG"))
-                    {
+                } else {
+                    if (line.contains("PRIVMSG")) {
                         line = line.trim();
                         String sentBy = null;
                         try {
                             sentBy = line.substring(1, line.indexOf('!'));
-                        }
-                        catch(StringIndexOutOfBoundsException e)
-                        {
+                        } catch (StringIndexOutOfBoundsException e) {
                             System.out.println("String index out of bounds on sentBy string" + line);
                             e.printStackTrace();
                         }
                         String inChannel = null;
                         try {
                             inChannel = line.substring(line.indexOf('#') + 1, line.indexOf(':', line.indexOf('#')) - 1);
-                        }
-                        catch(StringIndexOutOfBoundsException e)
-                        {
+                        } catch (StringIndexOutOfBoundsException e) {
                             System.out.println("String index out of bounds on inChannel string" + line);
                             e.printStackTrace();
                         }
@@ -126,9 +114,7 @@ public class TwitchClient {
                         String message = null;
                         try {
                             message = line.substring(line.indexOf(':', 1) + 1);
-                        }
-                        catch(StringIndexOutOfBoundsException e)
-                        {
+                        } catch (StringIndexOutOfBoundsException e) {
 
                             System.out.println("String index out of bounds on message string" + line);
                             e.printStackTrace();
@@ -137,7 +123,7 @@ public class TwitchClient {
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
                         String response = cd.checkLine(inChannel, sentBy, message, this);
 
-                        if(response != null) {
+                        if (response != null) {
                             writer.write(MessageBuilder.buildSendMessage(inChannel, response));
                             writer.flush();
                         }

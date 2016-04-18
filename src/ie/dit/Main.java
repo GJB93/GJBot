@@ -7,16 +7,11 @@ public class Main {
 
     public static void main(String[] args)
     {
-        TwitchClient client;
-
-        client = new TwitchClient(args[0], args[1], args[2]);
+        TwitchClient client = new TwitchClient(args[0], args[1], args[2]);
+        Thread clientThread = new Thread(client);
 
         client.joinChannel("gjb93");
         //client.joinChannel("cirno_tv");
-
-        while(true)
-        {
-            client.listen();
-        }
+        clientThread.run();
     }
 }
