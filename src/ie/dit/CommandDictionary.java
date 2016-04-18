@@ -2,6 +2,7 @@ package ie.dit;
 
 import java.time.Period;
 import java.util.Hashtable;
+import java.util.Set;
 
 /**
  * Created by Graham on 13-Apr-16.
@@ -9,10 +10,14 @@ import java.util.Hashtable;
 public class CommandDictionary {
 
     APILibrary api;
+    private Hashtable<String, String> streamMessage;
+    private Hashtable<String, Boolean> streamOnline;
 
     CommandDictionary(String clientID)
     {
         api = new APILibrary(clientID);
+        streamMessage = new Hashtable<>();
+        streamOnline = new Hashtable<>();
     }
 
     public String checkLine(String inChannel, String sentBy, String message, TwitchClient client)
@@ -101,7 +106,7 @@ public class CommandDictionary {
             uptime = uptime - 3600;
             if(uptime > 0)
             {
-                response += getTime(uptime, response);
+                response += getTime(uptime);
                 return response;
             }
             else
@@ -121,17 +126,17 @@ public class CommandDictionary {
                 String param = command.split(" ")[1];
                 if ("set".equals(param)) {
                     String motd = command.substring(command.indexOf("set") + 3);
-                    client.setStreamMessage(channel, motd);
-                    return "New MOTD: " + client.getStreamMessage(channel);
+                    streamMessage.put(channel, motd);
+                    return "New MOTD: " + streamMessage.get(channel);
                 }
 
                 if ("delete".equals(param)) {
-                    client.removeStreamMessage(channel);
+                    streamMessage.remove(channel);
                     return "Message of the day has been deleted";
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-                if (client.getStreamMessage(channel) != null) {
-                    return "MOTD: " + client.getStreamMessage(channel);
+                if (streamMessage.get(channel) != null) {
+                    return "MOTD: " + streamMessage.get(channel);
                 }
             }
         }
@@ -162,9 +167,9 @@ public class CommandDictionary {
         return null;
     }
 
-    private String getTime(long uptime, String response)
+    private String getTime(long uptime)
     {
-        String reply = response;
+        String reply = "";
         if(uptime >= 3600) {
             if(uptime/60 > 1)
                 reply += uptime / 3600 + " hours, ";

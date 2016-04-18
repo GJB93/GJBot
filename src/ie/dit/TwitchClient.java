@@ -20,34 +20,14 @@ public class TwitchClient {
     private LocalTime lastCheck;
     private BufferedWriter writer;
     private BufferedReader reader;
-    private final APILibrary api;
     boolean allowCommands;
     private String sendString = "\r\n";
-    private Hashtable<String, Boolean> streamOnline;
-    private Hashtable<String, String> streamMessage;
-
-    public void setStreamMessage(String channel, String message)
-    {
-        streamMessage.put(channel, message);
-    }
-
-    public String getStreamMessage(String channel)
-    {
-        return streamMessage.get(channel);
-    }
-
-    public void removeStreamMessage(String channel)
-    {
-        streamMessage.remove(channel);
-    }
 
     TwitchClient(String username, String token, String clientID)
     {
         String server = "irc.chat.twitch.tv";
         int portNumber = 6667;
         Socket socket;
-        streamOnline = new Hashtable<>();
-        streamMessage = new Hashtable<>();
         allowCommands = false;
         lastMessageSent = LocalTime.now();
         lastCheck = LocalTime.now();
@@ -83,7 +63,6 @@ public class TwitchClient {
             e.printStackTrace();
         }
         cd = new CommandDictionary(clientID);
-        api = new APILibrary(clientID);
     }
 
     public void listen()
@@ -91,10 +70,6 @@ public class TwitchClient {
         try
         {
             System.out.println("Listening...");
-            if(Duration.between(lastCheck, LocalTime.now()).getSeconds() > 59)
-            {
-                this.checkStatus();
-            }
             String line;
             while ((line = reader.readLine()) != null)
             {
@@ -179,15 +154,6 @@ public class TwitchClient {
 
             writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + ", type !leave to disconnect this bot" + sendString);
             writer.flush();
-
-            if(api.isOnline(channel))
-            {
-                streamOnline.put(channel, true);
-            }
-            else
-            {
-                streamOnline.put(channel, false);
-            }
         }
         catch(IOException e)
         {
@@ -222,21 +188,7 @@ public class TwitchClient {
         }
     }
 
-    public void checkStatus()
-    {
-        Set<String> keys = streamOnline.keySet();
-        for(String key: keys)
-        {
-            if(streamOnline.get(key))
-            {
-                api.checkGame(key);
-            }
-            else
-            {
-                api.isOnline(key);
-            }
-        }
-    }
+
 
     private void checkCaps(String message, String channel, String user)
     {

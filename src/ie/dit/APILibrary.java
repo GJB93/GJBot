@@ -154,48 +154,4 @@ public class APILibrary {
             return 0;
         }
     }
-
-    public long getGameUptime(String channel)
-    {
-        return Duration.between(currentGameStart.get(channel), LocalTime.now()).getSeconds();
-    }
-
-    public void checkGame(String channel)
-    {
-        target = "";
-        target += baseTwitchUrl + "streams/" + channel + "?client_id=" + clientID;
-        URL targetUrl = setUrl(target);
-
-        JSONObject obj = getJSON(targetUrl);
-
-        if(!obj.isNull("stream")) {
-            String value = obj.getJSONObject("stream").getString("game");
-            if(!value.equals(currentGame))
-            {
-                currentGame.put(channel, value);
-                currentGameStart.put(channel, LocalTime.now());
-            }
-        }
-    }
-
-    public boolean isOnline(String channel)
-    {
-        target = "";
-        target += baseTwitchUrl + "streams/" + channel + "?client_id=" + clientID;
-        URL targetUrl = setUrl(target);
-
-        JSONObject obj = getJSON(targetUrl);
-
-        if(!obj.isNull("stream")) {
-            currentGame.put(channel, obj.getJSONObject("stream").getString("game"));
-            String value = obj.getJSONObject("stream").getString("created_at");
-            value = value.substring(value.indexOf('T')+1, value.indexOf('Z'));
-            currentGameStart.put(channel, LocalTime.parse(value));
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
 }
