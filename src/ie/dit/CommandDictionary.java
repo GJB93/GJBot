@@ -2,7 +2,6 @@ package ie.dit;
 
 import java.time.Period;
 import java.util.Hashtable;
-import java.util.Set;
 
 /**
  * Created by Graham on 13-Apr-16.
@@ -22,7 +21,7 @@ public class CommandDictionary {
 
     public String checkLine(String inChannel, String sentBy, String message, TwitchClient client)
     {
-        if("test".equals(message))
+        if("test".equals(message) && sentBy != "gjbot93")
         {
             return "test";
         }
@@ -120,6 +119,11 @@ public class CommandDictionary {
             return "Bot created by GJB93. Source code and information about this bot can be found at https://github.com/GJB93/GJBot";
         }
 
+        if("help".equals(command))
+        {
+            return "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !leave";
+        }
+
         if(command.contains("motd")) {
             System.out.println("Checking message of the day");
             try {
@@ -195,7 +199,8 @@ public class CommandDictionary {
     }
 
     /*
-
+    //String brainPower = "O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A-JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA";
+    //String part = "O-oooooooooo AAAAE-A-A-I-A-U-";
     //private LocalTime lastSentBrainPower;
     //private LocalTime lastReceivedBrainPower;
     //private String lastSentBy;

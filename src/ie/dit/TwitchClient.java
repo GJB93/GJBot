@@ -4,24 +4,22 @@ import java.io.*;
 import java.net.Socket;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.time.Period;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Graham on 06-Apr-16.
  */
-public class TwitchClient {
+public class TwitchClient implements Runnable{
 
     CommandDictionary cd;
-    private LocalTime lastMessageSent;
     private LocalTime lastCheck;
     private BufferedWriter writer;
     private BufferedReader reader;
     boolean allowCommands;
     private String sendString = "\r\n";
+    private Hashtable<String, Boolean> streamOnline;
+    private Hashtable<String, String> streamMessage;
+    ArrayList<String> connectedChannels;
 
     TwitchClient(String username, String token, String clientID)
     {
@@ -29,9 +27,10 @@ public class TwitchClient {
         int portNumber = 6667;
         Socket socket;
         allowCommands = false;
-        lastMessageSent = LocalTime.now();
+        streamOnline = new Hashtable<>();
+        streamMessage = new Hashtable<>();
         lastCheck = LocalTime.now();
-
+        connectedChannels = new ArrayList<>();
         try
         {
             System.out.println("Bot Started at: " + LocalTime.now().toString());
@@ -65,42 +64,32 @@ public class TwitchClient {
         cd = new CommandDictionary(clientID);
     }
 
-    public void listen()
+    public void run()
     {
         try
         {
             System.out.println("Listening...");
+
             String line;
-            while ((line = reader.readLine()) != null)
-            {
-                if(line.startsWith("PING"))
-                {
-                    writer.write("PONG :tmi.twitch.tv" + sendString);
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("PING")) {
+                    writer.write(MessageBuilder.pingReply());
                     writer.flush();
                     System.out.println("Replied to ping");
-                }
-                else
-                {
-                    if(line.contains("PRIVMSG"))
-                    {
-                        //String brainPower = "O-oooooooooo AAAAE-A-A-I-A-U- JO-oooooooooooo AAE-O-A-A-U-U-A- E-eee-ee-eee AAAAE-A-E-I-E-A-JO-ooo-oo-oo-oo EEEEO-A-AAA-AAAA";
-                        //String part = "O-oooooooooo AAAAE-A-A-I-A-U-";
+                } else {
+                    if (line.contains("PRIVMSG")) {
                         line = line.trim();
                         String sentBy = null;
                         try {
                             sentBy = line.substring(1, line.indexOf('!'));
-                        }
-                        catch(StringIndexOutOfBoundsException e)
-                        {
+                        } catch (StringIndexOutOfBoundsException e) {
                             System.out.println("String index out of bounds on sentBy string" + line);
                             e.printStackTrace();
                         }
                         String inChannel = null;
                         try {
                             inChannel = line.substring(line.indexOf('#') + 1, line.indexOf(':', line.indexOf('#')) - 1);
-                        }
-                        catch(StringIndexOutOfBoundsException e)
-                        {
+                        } catch (StringIndexOutOfBoundsException e) {
                             System.out.println("String index out of bounds on inChannel string" + line);
                             e.printStackTrace();
                         }
@@ -108,9 +97,7 @@ public class TwitchClient {
                         String message = null;
                         try {
                             message = line.substring(line.indexOf(':', 1) + 1);
-                        }
-                        catch(StringIndexOutOfBoundsException e)
-                        {
+                        } catch (StringIndexOutOfBoundsException e) {
 
                             System.out.println("String index out of bounds on message string" + line);
                             e.printStackTrace();
@@ -119,8 +106,8 @@ public class TwitchClient {
                         System.out.println("#" + inChannel + " " + sentBy + ": " + message);
                         String response = cd.checkLine(inChannel, sentBy, message, this);
 
-                        if(response != null) {
-                            writer.write("PRIVMSG #" + inChannel + " :" + response + sendString);
+                        if (response != null) {
+                            writer.write(MessageBuilder.buildSendMessage(inChannel, response));
                             writer.flush();
                         }
                         checkCaps(message, inChannel, sentBy);
@@ -152,8 +139,10 @@ public class TwitchClient {
                 }
             }
 
-            writer.write("PRIVMSG #" + channel + " :Joined channel " + channel + ", type !leave to disconnect this bot" + sendString);
+            writer.write(MessageBuilder.buildSendMessage(channel, "Joined channel " + channel + ", type !leave to disconnect this bot"));
             writer.flush();
+
+            connectedChannels.add(channel);
         }
         catch(IOException e)
         {
@@ -166,8 +155,8 @@ public class TwitchClient {
     {
         try
         {
-            writer.write("PRIVMSG #" + channel + " :Leaving channel..." + sendString);
-            writer.write("PART #" + channel + sendString);
+            writer.write(MessageBuilder.buildSendMessage(channel, "Leaving channel..."));
+            writer.write(MessageBuilder.buildLeaveMessage(channel));
             writer.flush();
 
             String line;
@@ -180,6 +169,8 @@ public class TwitchClient {
                 }
             }
             System.out.println("Left #" + channel);
+
+            connectedChannels.remove(channel);
         }
         catch(IOException e)
         {
@@ -213,7 +204,7 @@ public class TwitchClient {
             if(successiveCaps >= check.length()*0.5f )
             {
                 try {
-                    writer.write("PRIVMSG #" + channel + " :" + user + " went over excessive cap limit" + sendString);
+                    writer.write(MessageBuilder.buildSendMessage(channel, user + " went over the cap limit!"));
                     writer.flush();
                     break;
                 }
