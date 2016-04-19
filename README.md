@@ -6,6 +6,8 @@ This Twitch chat bot was originally created as a project for my third Object Ori
 
 ## How it works
 
+You must pass your bot's username, oauth token and client ID to the application in order to run it. These are given as arguments when starting the program.
+
 As mentioned above, this bot works using commands. A command is any message that starts with a '!' character, and any message that is supported as a command by the bot. At this moment in time, the commands that can be given to the bot are as follows:
 
  * !help - Returns a list of possible commands
