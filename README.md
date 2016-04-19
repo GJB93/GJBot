@@ -1,5 +1,10 @@
 # GJBot
 
+## Dependencies 
+
+org.json - http://mvnrepository.com/artifact/org.json/json/20160212
+Java 8 JDK - http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
 ## Introduction
 
 This Twitch chat bot was originally created as a project for my third Object Oriented Programming assignment in 2nd Year. I chose to pursue this project due to my own personal interest in Twitch as a whole. I have been using the website for almost four years now, and have seen many different chat bots. I decided I would create a basic command driven bot as my first Twitch bot, as it seems like the most prevalent type of bot on the website. I wanted to build the project from the ground up, so I decided against using pirc to aid in the creation of this bot.
