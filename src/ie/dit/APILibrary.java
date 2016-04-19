@@ -13,7 +13,8 @@ import java.time.Period;
 import java.util.Hashtable;
 
 /**
- * Created by Graham on 07-Apr-16.
+ * This class is used to query the Twitch API, and to create
+ * a JSON object based on the given URL stream
  */
 public class APILibrary {
 
@@ -21,13 +22,9 @@ public class APILibrary {
     private String target;
     private String clientID;
     private BufferedReader reader;
-    private Hashtable<String, String> currentGame;
-    private Hashtable<String, LocalTime> currentGameStart;
 
     private APILibrary()
     {
-        currentGame = new Hashtable<>();
-        currentGameStart = new Hashtable<>();
         baseTwitchUrl = "https://api.twitch.tv/kraken/";
         target = "";
     }
@@ -38,6 +35,9 @@ public class APILibrary {
         this.clientID = clientID;
     }
 
+    /**
+     * Creates a URL based on a given string
+     */
     private URL setUrl(String targetUrl)
     {
         URL url;
@@ -54,6 +54,9 @@ public class APILibrary {
         return url;
     }
 
+    /**
+     * Creates a JSON Object using text found at a given URL
+     */
     private JSONObject getJSON(URL targetUrl)
     {
         try {
@@ -82,6 +85,9 @@ public class APILibrary {
         return new JSONObject(str);
     }
 
+    /**
+     * Retrieves a stream's title from the Twitch API
+     */
     public String getStreamTitle(String channel)
     {
         target = "";
@@ -101,6 +107,9 @@ public class APILibrary {
         }
     }
 
+    /**
+     * Retrieves the last played game on the given channel
+     */
     public String getCurrentGame(String channel)
     {
         target = "";
@@ -119,6 +128,10 @@ public class APILibrary {
         }
     }
 
+    /**
+     * Returns the period between the date a channel was created
+     * and the date at the time the command is given
+     */
     public Period getChannelAge(String channel)
     {
         target = "";
@@ -135,6 +148,10 @@ public class APILibrary {
         return Period.between(created, LocalDate.now());
     }
 
+    /**
+     * Returns the duration of the stream from the stream's start time
+     * to the time the command was given. Returns the value as a long
+     */
     public long getChannelUptime(String channel)
     {
         target = "";

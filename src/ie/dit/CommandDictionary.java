@@ -4,28 +4,28 @@ import java.time.Period;
 import java.util.Hashtable;
 
 /**
- * Created by Graham on 13-Apr-16.
+ * This class contains definitions for how to answer the various commands
+ * that can be given to the bot. It references the Twitch API for some
+ * commands, and uses a Hashtable to store the various MOTDs stored
+ * across different channels
  */
 public class CommandDictionary {
 
     APILibrary api;
     private Hashtable<String, String> streamMessage;
-    private Hashtable<String, Boolean> streamOnline;
 
     CommandDictionary(String clientID)
     {
         api = new APILibrary(clientID);
         streamMessage = new Hashtable<>();
-        streamOnline = new Hashtable<>();
     }
 
+    /**
+     * This method takes a message given from the client and checks if there
+     * is a command given
+     */
     public String checkLine(String inChannel, String sentBy, String message, TwitchClient client)
     {
-        if("test".equals(message) && sentBy != "gjbot93")
-        {
-            return "test";
-        }
-
         if (message.charAt(0) == '!') {
             System.out.println("Command received");
             String command = message.substring(1);
@@ -36,8 +36,17 @@ public class CommandDictionary {
         return null;
     }
 
+    /**
+     * This method returns a response to the command given by the user
+     */
+
     private String answerCommand(String command, String channel, String sentBy, TwitchClient client)
     {
+        if("test".equals(command))
+        {
+            return "test";
+        }
+
         if("leave".equals(command))
         {
             client.disconnect(channel);
@@ -55,6 +64,12 @@ public class CommandDictionary {
         {
             Period age = api.getChannelAge(channel);
             String response = "This channel is ";
+
+            /**
+             * This series of if statements checks to see if any of
+             * the values are zero, so that the bot knows not to output
+             * that value
+             */
             if(age.getYears() > 0)
             {
                 response += age.getYears() + " years, ";
@@ -103,6 +118,11 @@ public class CommandDictionary {
             long uptime = api.getChannelUptime(channel);
             String response = "Stream has been online for ";
             uptime = uptime - 3600;
+
+            /**
+             * If-else to check if the stream is
+             * currently online
+             */
             if(uptime > 0)
             {
                 response += getTime(uptime);
@@ -127,6 +147,12 @@ public class CommandDictionary {
         if(command.contains("motd")) {
             System.out.println("Checking message of the day");
             try {
+                /**
+                 * If the message contains a parameter, one of these
+                 * two commands is executed. This comand works across
+                 * multiple channels, meaning that each message is unique
+                 * to the channel that created it
+                 */
                 String param = command.split(" ")[1];
                 if ("set".equals(param)) {
                     String motd = command.substring(command.indexOf("set") + 3);
@@ -146,6 +172,11 @@ public class CommandDictionary {
         }
 
         if("gjb93".equals(sentBy)) {
+            /**
+             * This allows the bot to be added and removed from
+             * different chat channels without having to restart
+             * the program
+             */
             if (command.contains("join") && "gjb93".equals(channel)) {
                 try {
                     String param = command.split(" ")[1];
@@ -171,6 +202,11 @@ public class CommandDictionary {
         return null;
     }
 
+    /**
+     * This method takes a value given in seconds and outputs
+     * the number of hours, minutes and seconds in the given time
+     * amount
+     */
     private String getTime(long uptime)
     {
         String reply = "";

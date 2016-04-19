@@ -1,7 +1,7 @@
 package ie.dit;
 
 /**
- * Created by Graham on 18-Apr-16.
+ * Class used to create messages to send to the IRC client
  */
 public class MessageBuilder {
 
