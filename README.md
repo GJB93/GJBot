@@ -20,7 +20,7 @@ As mentioned above, this bot works using commands. A command is any message that
  * !botinfo - Gives information about the bot, and links back to this GitHub page.
  * !test - Simple test command to confirm the bot is working, sends back test as a message
  * !motd - Returns the message of the day if it is set for the channel the command was sent in
- * !motd set <message> - Sets the message of the day to be the message given
+ * !motd set "message" - Sets the message of the day to be the message given
  * !motd delete - Deletes the message of the day currently set for the channel
  * !uptime - Returns the amount of time that a stream
  * !title - Returns the title of the stream
@@ -30,8 +30,8 @@ As mentioned above, this bot works using commands. A command is any message that
  
 There are also two commands that can currently be accessed from my stream chat, which are:
 
- * !join <channel> - Connects the bot to the specified channel
- * !leave <channel> - Disconnects the bot from the specified channel
+ * !join "channel" - Connects the bot to the specified channel
+ * !leave "channel" - Disconnects the bot from the specified channel
  
 ## Can I use this?
 
