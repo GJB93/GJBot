@@ -1,5 +1,6 @@
 package ie.dit;
 
+import java.time.Duration;
 import java.time.Period;
 import java.util.Hashtable;
 
@@ -63,68 +64,20 @@ public class CommandDictionary {
         if("age".equals(command))
         {
             Period age = api.getChannelAge(channel);
-            String response = "This channel is ";
-
-            /**
-             * This series of if statements checks to see if any of
-             * the values are zero, so that the bot knows not to output
-             * that value
-             */
-            if(age.getYears() > 0)
-            {
-                response += age.getYears() + " years, ";
-            }
-
-            if(age.getMonths() > 0)
-            {
-                response += age.getMonths() + " months, and ";
-            }
-
-            if(age.getDays() > 0)
-            {
-                response += age.getDays() + " days old";
-            }
-            return response;
+            return "This channel is " + getAge(age);
         }
 
         if("myage".equals(command))
         {
             Period age = api.getChannelAge(sentBy);
-            String response = "Your account is ";
-            if(age.getYears() > 0)
-            {
-                response += age.getYears() + " years, ";
-            }
-
-            if(age.getMonths() > 0)
-            {
-                response += age.getMonths() + " months, and ";
-            }
-
-            if(age.getDays() > 0)
-            {
-                response += age.getDays() + " days old";
-            }
-            return response;
+            return "Your account is " + getAge(age);
         }
 
         if("followage".equals(command))
         {
             Period age = api.getFollowAge(channel, sentBy);
             if(age != null) {
-                String response = sentBy + " has been following " + channel + " for ";
-                if (age.getYears() > 0) {
-                    response += age.getYears() + " years, ";
-                }
-
-                if (age.getMonths() > 0) {
-                    response += age.getMonths() + " months, and ";
-                }
-
-                if (age.getDays() > 0) {
-                    response += age.getDays() + " days";
-                }
-                return response;
+                return sentBy + " has been following " + channel + " for " + getAge(age);
             }
             else
             {
@@ -255,6 +208,38 @@ public class CommandDictionary {
             reply += uptime + " seconds";
         else
             reply += uptime + " second";
+
+        return reply;
+    }
+
+    /**
+     * This series of method creates a String that displays the date
+     * in a readable string. Itchecks to see if any of
+     * the values are zero, so that the bot knows not to output
+     * that value
+     */
+    private String getAge(Period age)
+    {
+        String reply = "";
+        if (age.getYears() > 0) {
+            if(age.getMonths() > 0 && age.getDays() > 0)
+                reply += age.getYears() + " years, ";
+            else if(age.getMonths() > 0 || age.getDays() > 0)
+                reply += age.getYears() + " years and ";
+            else
+                reply += age.getYears() + " years";
+        }
+
+        if (age.getMonths() > 0) {
+            if(age.getDays() > 0)
+                reply += age.getMonths() + " months, and ";
+            else
+                reply += age.getMonths() + " months";
+        }
+
+        if (age.getDays() > 0) {
+            reply += age.getDays() + " days";
+        }
 
         return reply;
     }
