@@ -1,7 +1,9 @@
 package ie.dit;
 
 /**
- * Created by Graham on 06-Apr-16.
+ * Main method passes the username, oauth token and client ID to the client.
+ * It then connects to the initial channels, and then starts listening to
+ * the client.
  */
 public class Main {
 

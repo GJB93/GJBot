@@ -2,7 +2,6 @@ package ie.dit;
 import org.json.*;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -21,7 +20,6 @@ public class APILibrary {
     private String baseTwitchUrl;
     private String target;
     private String clientID;
-    private BufferedReader reader;
 
     private APILibrary()
     {
@@ -59,6 +57,7 @@ public class APILibrary {
      */
     private JSONObject getJSON(URL targetUrl)
     {
+        BufferedReader reader;
         try {
             reader = new BufferedReader(new InputStreamReader(targetUrl.openStream()));
         }

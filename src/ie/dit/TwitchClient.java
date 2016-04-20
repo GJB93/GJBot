@@ -3,7 +3,6 @@ package ie.dit;
 import java.io.*;
 import java.net.Socket;
 import java.time.LocalTime;
-import java.util.*;
 
 /**
  * This class creates a connection to the Twitch Client using
@@ -14,20 +13,15 @@ public class TwitchClient implements Runnable{
 
     private CommandDictionary cd;
     private BufferedWriter writer;
-    private LocalTime startTime;
     private BufferedReader reader;
-    boolean allowCommands;
-    private String sendString = "\r\n";
-    private ArrayList<String> connectedChannels;
 
     TwitchClient(String username, String token, String clientID)
     {
-        startTime = LocalTime.now();
+        LocalTime startTime = LocalTime.now();
+        String sendString = "\r\n";
         String server = "irc.chat.twitch.tv";
         int portNumber = 6667;
         Socket socket;
-        allowCommands = false;
-        connectedChannels = new ArrayList<>();
         try
         {
             System.out.println("Bot Started at: " + startTime.toString());
@@ -169,8 +163,6 @@ public class TwitchClient implements Runnable{
 
             writer.write(MessageBuilder.buildSendMessage(channel, "Joined channel " + channel + ", type !leave to disconnect this bot"));
             writer.flush();
-
-            connectedChannels.add(channel);
         }
         catch(IOException e)
         {
@@ -201,8 +193,6 @@ public class TwitchClient implements Runnable{
                 }
             }
             System.out.println("Left #" + channel);
-
-            connectedChannels.remove(channel);
         }
         catch(IOException e)
         {
