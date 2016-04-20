@@ -161,7 +161,7 @@ public class TwitchClient implements Runnable{
                 }
             }
 
-            writer.write(MessageBuilder.buildSendMessage(channel, "Joined channel " + channel + ", type !leave to disconnect this bot"));
+            writer.write(MessageBuilder.buildSendMessage(channel, "Joined channel " + channel + ", type !leave to disconnect this bot, type !help to get a list of commands"));
             writer.flush();
         }
         catch(IOException e)
