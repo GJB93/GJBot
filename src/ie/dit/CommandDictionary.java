@@ -146,13 +146,13 @@ public class CommandDictionary {
 
         if(command.contains("motd")) {
             System.out.println("Checking message of the day");
-            try {
-                /**
-                 * If the message contains a parameter, one of these
-                 * two commands is executed. This comand works across
-                 * multiple channels, meaning that each message is unique
-                 * to the channel that created it
-                 */
+            /**
+             * If the message contains a parameter, one of these
+             * two commands is executed. This comand works across
+             * multiple channels, meaning that each message is unique
+             * to the channel that created it
+             */
+            if(command.split(" ").length > 1) {
                 String param = command.split(" ")[1];
                 if ("set".equals(param)) {
                     String motd = command.substring(command.indexOf("set") + 3);
@@ -160,11 +160,12 @@ public class CommandDictionary {
                     return "New MOTD: " + streamMessage.get(channel);
                 }
 
-                if ("delete".equals(param)) {
+                if ("delete".equals(param) && streamMessage.get(channel) != null) {
                     streamMessage.remove(channel);
                     return "Message of the day has been deleted";
                 }
-            } catch (ArrayIndexOutOfBoundsException e) {
+            }
+            else {
                 if (streamMessage.get(channel) != null) {
                     return "MOTD: " + streamMessage.get(channel);
                 }
