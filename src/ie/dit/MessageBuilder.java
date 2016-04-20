@@ -17,6 +17,10 @@ public class MessageBuilder {
         return "PART #" + channel + sendString;
     }
 
+    public static String buildJoinMessage(String channel){
+        return "JOIN #" + channel + sendString;
+    }
+
     public static String pingReply()
     {
         return "PONG :tmi.twitch.tv" + sendString;

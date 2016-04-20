@@ -130,12 +130,9 @@ public class TwitchClient implements Runnable{
 
                         // Write a response to the client if it is necessary to do so
                         if (response != null) {
-                            writer.write(MessageBuilder.buildSendMessage(inChannel, response));
+                            writer.write(response);
                             writer.flush();
                         }
-
-                        // Checking the message for excess capital letters
-                        checkCaps(message, inChannel, sentBy);
                     }
                 }
             }
@@ -158,7 +155,7 @@ public class TwitchClient implements Runnable{
         System.out.println("Joining channel " + channel + "...");
         try
         {
-            writer.write("JOIN #" + channel + sendString);
+            writer.write(MessageBuilder.buildJoinMessage(channel));
             writer.flush();
             String line;
 
@@ -211,48 +208,6 @@ public class TwitchClient implements Runnable{
         {
             System.out.println("IO error occurred when disconnecting");
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Method used to check messages for excessive use of capital letters
-     * over a certain message length
-     */
-    private void checkCaps(String message, String channel, String user)
-    {
-        int successiveCaps = 0;
-        int overallCaps = 0;
-        boolean charBefore = false;
-        String check = message.replace(" ", "");
-        for(int i=0; i<check.length(); i++)
-        {
-            if(Character.isUpperCase(check.charAt(i)))
-            {
-                overallCaps++;
-                if(charBefore) {
-                    successiveCaps++;
-                }
-                charBefore = true;
-            }
-            else
-            {
-                charBefore = false;
-                successiveCaps = 0;
-            }
-
-            if((successiveCaps >= check.length()*0.5f || overallCaps >= check.length()*0.5f) && check.length() > 20)
-            {
-                try {
-                    writer.write(MessageBuilder.buildSendMessage(channel, user + " went over the cap limit!"));
-                    writer.flush();
-                    break;
-                }
-                catch(IOException e)
-                {
-                    System.out.println("IO exception occurred when writing cap limit message");
-                    e.printStackTrace();
-                }
-            }
         }
     }
 }

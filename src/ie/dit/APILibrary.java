@@ -194,4 +194,15 @@ public class APILibrary {
             return 0;
         }
     }
+
+    public boolean checkPartnered(String channel)
+    {
+        target = "";
+        target += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
+        URL targetUrl = setUrl(target);
+
+        JSONObject obj = getJSON(targetUrl);
+
+        return obj.getBoolean("partner");
+    }
 }

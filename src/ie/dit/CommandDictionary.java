@@ -1,5 +1,6 @@
 package ie.dit;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Period;
 import java.util.Hashtable;
@@ -34,6 +35,11 @@ public class CommandDictionary {
             return answerCommand(command, inChannel, sentBy, client);
         }
 
+        if(checkCaps(message))
+        {
+            return MessageBuilder.buildSendMessage(inChannel, sentBy + " went over the cap limit!");
+        }
+
         return null;
     }
 
@@ -45,7 +51,7 @@ public class CommandDictionary {
     {
         if("test".equals(command))
         {
-            return "test";
+            return MessageBuilder.buildSendMessage(channel, "test");
         }
 
         if("leave".equals(command))
@@ -54,40 +60,40 @@ public class CommandDictionary {
         }
 
         if ("title".equals(command)) {
-            return api.getStreamTitle(channel);
+            return MessageBuilder.buildSendMessage(channel, api.getStreamTitle(channel));
         }
 
         if ("game".equals(command)) {
-            return api.getCurrentGame(channel);
+            return MessageBuilder.buildSendMessage(channel, api.getCurrentGame(channel));
         }
 
         if("age".equals(command))
         {
             Period age = api.getChannelAge(channel);
-            return "This channel is " + getAge(age);
+            return MessageBuilder.buildSendMessage(channel, "This channel is " + getAge(age));
         }
 
         if("myage".equals(command))
         {
             Period age = api.getChannelAge(sentBy);
-            return "Your account is " + getAge(age);
+            return MessageBuilder.buildSendMessage(channel, "Your account is " + getAge(age));
         }
 
         if("followage".equals(command))
         {
             Period age = api.getFollowAge(channel, sentBy);
             if(age != null) {
-                return sentBy + " has been following " + channel + " for " + getAge(age);
+                return MessageBuilder.buildSendMessage(channel, sentBy + " has been following " + channel + " for " + getAge(age));
             }
             else
             {
-                return sentBy + " isn't following " + channel;
+                return MessageBuilder.buildSendMessage(channel, sentBy + " isn't following " + channel);
             }
         }
 
-        if("sub".equals(command) || "subscribe".equals(command))
+        if(("sub".equals(command) || "subscribe".equals(command)) && api.checkPartnered(channel))
         {
-            return "https://www.twitch.tv/" + channel + "/subscribe";
+            return MessageBuilder.buildSendMessage(channel, "https://www.twitch.tv/" + channel + "/subscribe");
         }
 
         if("uptime".equals(command))
@@ -103,22 +109,22 @@ public class CommandDictionary {
             if(uptime > 0)
             {
                 response += getTime(uptime);
-                return response;
+                return MessageBuilder.buildSendMessage(channel, response);
             }
             else
             {
-                return "Stream is currently offline";
+                return MessageBuilder.buildSendMessage(channel, "Stream is currently offline");
             }
         }
 
         if("botinfo".equals(command))
         {
-            return "Bot created by GJB93. Source code and information about this bot can be found at https://github.com/GJB93/GJBot";
+            return MessageBuilder.buildSendMessage(channel, "Bot created by GJB93. Source code and information about this bot can be found at https://github.com/GJB93/GJBot");
         }
 
         if("help".equals(command))
         {
-            return "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !followage, !leave";
+            return MessageBuilder.buildSendMessage(channel, "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !followage, !leave");
         }
 
         if(command.contains("motd")) {
@@ -134,17 +140,17 @@ public class CommandDictionary {
                 if ("set".equals(param)) {
                     String motd = command.substring(command.indexOf("set") + 3);
                     streamMessage.put(channel, motd);
-                    return "New MOTD: " + streamMessage.get(channel);
+                    return MessageBuilder.buildSendMessage(channel, "New MOTD: " + streamMessage.get(channel));
                 }
 
                 if ("delete".equals(param) && streamMessage.get(channel) != null) {
                     streamMessage.remove(channel);
-                    return "Message of the day has been deleted";
+                    return MessageBuilder.buildSendMessage(channel, "Message of the day has been deleted");
                 }
             }
             else {
                 if (streamMessage.get(channel) != null) {
-                    return "MOTD: " + streamMessage.get(channel);
+                    return MessageBuilder.buildSendMessage(channel, "MOTD: " + streamMessage.get(channel));
                 }
             }
         }
@@ -159,10 +165,10 @@ public class CommandDictionary {
                 try {
                     String param = command.split(" ")[1];
                     client.joinChannel(param);
-                    return "Joining channel " + param;
+                    return MessageBuilder.buildSendMessage(channel, "Joining channel " + param);
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("Incorrect join parameter given");
-                    return "Invite command is missing channel parameter";
+                    return MessageBuilder.buildSendMessage(channel, "Invite command is missing channel parameter");
                 }
             }
 
@@ -170,7 +176,7 @@ public class CommandDictionary {
                 try {
                     String param = command.split(" ")[1];
                     client.disconnect(param);
-                    return "Leaving channel " + param;
+                    return MessageBuilder.buildSendMessage(channel, "Leaving channel " + param);
                 } catch (ArrayIndexOutOfBoundsException e) {
                     return null;
                 }
@@ -242,6 +248,41 @@ public class CommandDictionary {
         }
 
         return reply;
+    }
+
+    /**
+     * Method used to check messages for excessive use of capital letters
+     * over a certain message length
+     */
+    private boolean checkCaps(String message)
+    {
+        int successiveCaps = 0;
+        int overallCaps = 0;
+        boolean charBefore = false;
+        String check = message.replace(" ", "");
+        for(int i=0; i<check.length(); i++)
+        {
+            if(Character.isUpperCase(check.charAt(i)))
+            {
+                overallCaps++;
+                if(charBefore) {
+                    successiveCaps++;
+                }
+                charBefore = true;
+            }
+            else
+            {
+                charBefore = false;
+                successiveCaps = 0;
+            }
+
+            if((successiveCaps >= check.length()*0.5f || overallCaps >= check.length()*0.5f) && check.length() > 20)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*
