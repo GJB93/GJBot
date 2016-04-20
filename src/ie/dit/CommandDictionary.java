@@ -124,7 +124,7 @@ public class CommandDictionary {
 
         if("help".equals(command))
         {
-            return MessageBuilder.buildSendMessage(channel, "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !followage, !followers, !viewcount, !leave");
+            return MessageBuilder.buildSendMessage(channel, "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !followage, !followers, !viewers, !leave");
         }
 
         if("followers".equals(command))
