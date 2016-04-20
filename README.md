@@ -28,6 +28,8 @@ As mentioned above, this bot works using commands. A command is any message that
  * **!age** - Returns the account age of the current channel
  * **!myage** - Returns the account age of the sender
  * **!followage** - Returns the amount of time the sender has been following the channel
+ * **!viewers** - Returns the number of live viewers the channel currently has
+ * **!followers** - Returns the number of followers the channel has
  
 There are also two commands that can currently be accessed from my stream chat, which are:
 
