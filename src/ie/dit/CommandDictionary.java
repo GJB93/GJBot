@@ -124,7 +124,20 @@ public class CommandDictionary {
 
         if("help".equals(command))
         {
-            return MessageBuilder.buildSendMessage(channel, "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !followage, !leave");
+            return MessageBuilder.buildSendMessage(channel, "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !followage, !followers, !viewcount, !leave");
+        }
+
+        if("followers".equals(command))
+        {
+            return MessageBuilder.buildSendMessage(channel, "This channel has " + api.getFollowCount(channel) + " followers");
+        }
+
+        if("viewers".equals(command))
+        {
+            if(api.getChannelViewerCount(channel) >= 0)
+                return MessageBuilder.buildSendMessage(channel, "This channel currently has " + api.getChannelViewerCount(channel) + " viewers");
+            else
+                return MessageBuilder.buildSendMessage(channel, "This channel is currently offline");
         }
 
         if(command.contains("motd")) {

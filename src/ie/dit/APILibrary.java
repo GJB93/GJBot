@@ -129,6 +129,22 @@ public class APILibrary {
     }
 
     /**
+     * Returns the number of followers the channel has
+     */
+    public int getFollowCount(String channel)
+    {
+        target = "";
+        target += baseTwitchUrl + "channels/" + channel + "?client_id=" + clientID;
+
+        URL targetUrl = setUrl(target);
+
+        JSONObject obj = getJSON(targetUrl);
+
+        return obj.getInt("followers");
+
+    }
+
+    /**
      * Returns the period between the date a channel was created
      * and the date at the time the command is given
      */
@@ -148,6 +164,10 @@ public class APILibrary {
         return Period.between(created, LocalDate.now());
     }
 
+    /**
+     * Returns the amount of time that a user has been
+     * following the channel that the message was sent in
+     */
     public Period getFollowAge(String channel, String sentBy)
     {
         target = "";
@@ -192,6 +212,23 @@ public class APILibrary {
         else
         {
             return 0;
+        }
+    }
+
+    public int getChannelViewerCount(String channel)
+    {
+        target = "";
+        target += baseTwitchUrl + "streams/" + channel + "?client_id=" + clientID;
+        URL targetUrl = setUrl(target);
+
+        JSONObject obj = getJSON(targetUrl);
+
+        if(!obj.isNull("stream")) {
+            return obj.getJSONObject("stream").getInt("viewers");
+        }
+        else
+        {
+            return -1;
         }
     }
 
