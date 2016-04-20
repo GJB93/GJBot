@@ -11,7 +11,7 @@ import java.util.Hashtable;
  */
 public class CommandDictionary {
 
-    APILibrary api;
+    private APILibrary api;
     private Hashtable<String, String> streamMessage;
 
     CommandDictionary(String clientID)
@@ -106,6 +106,30 @@ public class CommandDictionary {
                 response += age.getDays() + " days old";
             }
             return response;
+        }
+
+        if("followage".equals(command))
+        {
+            Period age = api.getFollowAge(channel, sentBy);
+            if(age != null) {
+                String response = sentBy + " has been following " + channel + " for ";
+                if (age.getYears() > 0) {
+                    response += age.getYears() + " years, ";
+                }
+
+                if (age.getMonths() > 0) {
+                    response += age.getMonths() + " months, and ";
+                }
+
+                if (age.getDays() > 0) {
+                    response += age.getDays() + " days";
+                }
+                return response;
+            }
+            else
+            {
+                return sentBy + " isn't following " + channel;
+            }
         }
 
         if("sub".equals(command) || "subscribe".equals(command))

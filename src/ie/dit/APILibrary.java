@@ -2,6 +2,7 @@ package ie.dit;
 import org.json.*;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -10,7 +11,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
-import java.util.Hashtable;
 
 /**
  * This class is used to query the Twitch API, and to create
@@ -64,8 +64,8 @@ public class APILibrary {
         }
         catch(IOException e)
         {
-            System.out.println("IO exception occurred when creating the URL reader");
-            e.printStackTrace();
+            System.out.println("No file found at the URL given");
+            return null;
         }
 
         String line;
@@ -146,6 +146,29 @@ public class APILibrary {
         String[] split = value.split("-");
         LocalDate created = LocalDate.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
         return Period.between(created, LocalDate.now());
+    }
+
+    public Period getFollowAge(String channel, String sentBy)
+    {
+        target = "";
+        target += baseTwitchUrl + "users/" + sentBy + "/follows/channels/" + channel + "?client_id=" + clientID;
+
+        URL targetUrl = setUrl(target);
+
+        JSONObject obj = getJSON(targetUrl);
+
+        if(obj != null)
+        {
+            String value = obj.getString("created_at");
+            value = value.substring(0, value.indexOf('T'));
+            String[] split = value.split("-");
+            LocalDate created = LocalDate.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+            return Period.between(created, LocalDate.now());
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**

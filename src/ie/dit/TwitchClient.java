@@ -2,7 +2,6 @@ package ie.dit;
 
 import java.io.*;
 import java.net.Socket;
-import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -13,13 +12,13 @@ import java.util.*;
  */
 public class TwitchClient implements Runnable{
 
-    CommandDictionary cd;
+    private CommandDictionary cd;
     private BufferedWriter writer;
     private LocalTime startTime;
     private BufferedReader reader;
     boolean allowCommands;
     private String sendString = "\r\n";
-    ArrayList<String> connectedChannels;
+    private ArrayList<String> connectedChannels;
 
     TwitchClient(String username, String token, String clientID)
     {

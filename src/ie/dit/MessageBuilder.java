@@ -5,7 +5,7 @@ package ie.dit;
  */
 public class MessageBuilder {
 
-    static String sendString = "\r\n";
+    private static String sendString = "\r\n";
 
     public static String buildSendMessage(String channel, String body)
     {
