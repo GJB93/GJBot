@@ -118,7 +118,7 @@ public class CommandDictionary {
 
         if("help".equals(command))
         {
-            return "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !leave";
+            return "Commands: !botinfo, !uptime, !game, !title, !motd, !age, !myage, !followage, !leave";
         }
 
         if(command.contains("motd")) {
