@@ -181,7 +181,7 @@ public class CommandDictionary {
                 }
                 else
                 {
-                    return MessageBuilder.buildSendMessage(channel, "Parameter missing for the leave command");
+                    return null;
                 }
             }
         }
