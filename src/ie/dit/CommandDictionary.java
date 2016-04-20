@@ -162,23 +162,26 @@ public class CommandDictionary {
              * the program
              */
             if (command.contains("join") && "gjb93".equals(channel)) {
-                try {
+                if(command.split(" ").length > 1) {
                     String param = command.split(" ")[1];
                     client.joinChannel(param);
                     return MessageBuilder.buildSendMessage(channel, "Joining channel " + param);
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Incorrect join parameter given");
-                    return MessageBuilder.buildSendMessage(channel, "Invite command is missing channel parameter");
+                }
+                else
+                {
+                    return MessageBuilder.buildSendMessage(channel, "Parameter missing for the join command");
                 }
             }
 
             if (command.contains("leave") && "gjb93".equals(channel)) {
-                try {
+                if(command.split(" ").length > 1) {
                     String param = command.split(" ")[1];
                     client.disconnect(param);
                     return MessageBuilder.buildSendMessage(channel, "Leaving channel " + param);
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    return null;
+                }
+                else
+                {
+                    return MessageBuilder.buildSendMessage(channel, "Parameter missing for the leave command");
                 }
             }
         }
